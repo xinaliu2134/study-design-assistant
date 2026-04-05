@@ -1,0 +1,2350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Interactive study design assistant for clinical and epidemiological research. Decision tree, PICO builder, bias assessment, reporting guidelines, timeline planner, and power guide.">
+<meta name="keywords" content="study design, clinical trial, PICO, bias assessment, CONSORT, STROBE, PRISMA, research methodology, epidemiology">
+<meta name="author" content="Dr. Nana Liu">
+<title>Study Design Assistant | Clinical & Epidemiological Research</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f5f1eb;
+  --surface: #fffdf9;
+  --surface2: #f0ebe2;
+  --border: #d4c9b8;
+  --text: #1a1610;
+  --text-muted: #6b5e4a;
+  --accent: #2d5a3d;
+  --accent-light: #4a8a5d;
+  --accent-pale: #e8f2ec;
+  --danger: #8b2c2c;
+  --danger-pale: #fde8e8;
+  --gold: #b5860d;
+  --gold-pale: #fdf6e3;
+  --blue: #2d4a5a;
+  --blue-pale: #e8eef2;
+  --shadow: 0 2px 12px rgba(26,22,16,0.08);
+  --shadow-lg: 0 8px 32px rgba(26,22,16,0.12);
+  --radius: 4px;
+  --radius-lg: 8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'DM Mono', monospace;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* Header */
+header {
+  background: var(--accent);
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255,255,255,0.03) 20px, rgba(255,255,255,0.03) 40px);
+}
+.header-inner {
+  position: relative;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 32px 36px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+.header-title h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(24px, 4vw, 38px);
+  font-weight: 400;
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+  margin-bottom: 6px;
+}
+.header-title .subtitle {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 15px;
+  opacity: 0.7;
+  letter-spacing: 2px;
+}
+.lang-toggle {
+  display: flex;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 3px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.lang-btn {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.6);
+  padding: 8px 16px;
+  cursor: pointer;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 1px;
+  transition: all 0.2s;
+}
+.lang-btn.active {
+  background: rgba(255,255,255,0.15);
+  color: white;
+}
+
+/* Nav */
+.nav-bar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow);
+}
+.nav-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 32px;
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.nav-inner::-webkit-scrollbar { display: none; }
+.nav-tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 14px 16px;
+  cursor: pointer;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  transition: all 0.2s;
+  text-transform: uppercase;
+}
+.nav-tab:hover { color: var(--text); }
+.nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* Main */
+.container { max-width: 1100px; margin: 0 auto; padding: 32px; }
+.panel { display: none; animation: fadeIn 0.3s ease; }
+.panel.active { display: block; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.panel-header {
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+.panel-header h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 26px;
+  font-weight: 400;
+  margin-bottom: 6px;
+}
+.panel-header .desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* Cards & Sections */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.card-header {
+  background: var(--surface2);
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.card-body { padding: 20px; }
+
+/* Form Elements */
+.field-group { margin-bottom: 18px; }
+.field-group:last-child { margin-bottom: 0; }
+label {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+input[type="text"], input[type="number"], input[type="date"], select, textarea {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: var(--text);
+  transition: border-color 0.2s;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+textarea { resize: vertical; min-height: 60px; }
+select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b5e4a'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.5px;
+}
+.btn:hover { border-color: var(--accent); color: var(--accent); }
+.btn-primary {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+.btn-primary:hover { background: var(--accent-light); border-color: var(--accent-light); color: white; }
+.btn-sm { padding: 6px 12px; font-size: 11px; }
+
+/* Decision Tree */
+.dt-question {
+  background: var(--surface);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-bottom: 16px;
+  position: relative;
+}
+.dt-question h3 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 18px;
+  font-weight: 400;
+  margin-bottom: 4px;
+}
+.dt-question .dt-step {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.dt-question p {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+.dt-options { display: flex; flex-direction: column; gap: 8px; }
+.dt-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.5;
+}
+.dt-option:hover { border-color: var(--accent); background: var(--accent-pale); }
+.dt-option.selected { border-color: var(--accent); background: var(--accent-pale); font-weight: 500; }
+.dt-option .dt-arrow { color: var(--accent); font-size: 14px; flex-shrink: 0; }
+.dt-connector {
+  width: 2px;
+  height: 24px;
+  background: var(--accent);
+  margin: 0 auto 0 40px;
+  opacity: 0.4;
+}
+
+/* Result Card */
+.result-card {
+  background: var(--surface);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-top: 24px;
+}
+.result-card-header {
+  background: var(--accent);
+  color: white;
+  padding: 20px 24px;
+}
+.result-card-header h3 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px;
+  font-weight: 400;
+}
+.result-card-header .result-zh {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 14px;
+  opacity: 0.8;
+  margin-top: 4px;
+}
+.result-card-body { padding: 24px; }
+.result-section { margin-bottom: 20px; }
+.result-section:last-child { margin-bottom: 0; }
+.result-section h4 {
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.result-section ul {
+  list-style: none;
+  padding: 0;
+}
+.result-section li {
+  font-size: 12px;
+  padding: 4px 0;
+  padding-left: 16px;
+  position: relative;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.result-section li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 11px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.4;
+}
+.strength li::before { background: var(--accent); opacity: 0.7; }
+.limitation li::before { background: var(--danger); opacity: 0.7; }
+
+/* Two Column */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.three-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+}
+
+/* Checklist */
+.checklist-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.2s;
+}
+.checklist-item:last-child { border-bottom: none; }
+.checklist-item:hover { background: rgba(0,0,0,0.02); }
+.checklist-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.checklist-item .cl-text {
+  flex: 1;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text);
+}
+.checklist-item .cl-num {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 500;
+  min-width: 24px;
+}
+.checklist-item .cl-notes {
+  width: 100%;
+  margin-top: 6px;
+  font-size: 11px;
+  padding: 6px 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: 'DM Mono', monospace;
+  color: var(--text-muted);
+}
+.checklist-item .cl-notes:focus { border-color: var(--accent); outline: none; color: var(--text); }
+
+/* Progress bar */
+.progress-bar {
+  height: 8px;
+  background: var(--bg);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+.progress-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  text-align: right;
+}
+
+/* Traffic light */
+.traffic-light {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+.tl-low { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+.tl-some { background: #fff8e1; color: #f57f17; border: 1px solid #ffe082; }
+.tl-high { background: #fce4ec; color: #c62828; border: 1px solid #ef9a9a; }
+
+/* Bias domain row */
+.bias-domain {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.bias-domain:last-child { border-bottom: none; }
+.bias-domain h4 {
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+.bias-domain p {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+.bias-radios {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+.bias-radios label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--text);
+  margin-bottom: 0;
+}
+.bias-radios input[type="radio"] {
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+/* Gantt */
+.gantt-container {
+  overflow-x: auto;
+  margin-top: 16px;
+}
+.gantt-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.gantt-label {
+  width: 160px;
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--text-muted);
+  padding-right: 12px;
+  text-align: right;
+}
+.gantt-track {
+  flex: 1;
+  height: 28px;
+  position: relative;
+  background: var(--bg);
+  border-radius: 3px;
+}
+.gantt-bar {
+  position: absolute;
+  top: 4px;
+  height: 20px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  color: white;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  min-width: 20px;
+}
+
+/* Tables */
+.ref-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.ref-table th {
+  background: var(--surface2);
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  font-weight: 500;
+}
+.ref-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  line-height: 1.5;
+}
+.ref-table tr:last-child td { border-bottom: none; }
+.ref-table tr:hover td { background: rgba(0,0,0,0.02); }
+.ref-table .mono { font-family: 'DM Mono', monospace; font-size: 12px; }
+
+/* Tag */
+.tag {
+  display: inline-block;
+  font-size: 10px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-weight: 500;
+}
+.tag-green { background: var(--accent-pale); color: var(--accent); }
+.tag-gold { background: var(--gold-pale); color: var(--gold); }
+.tag-blue { background: var(--blue-pale); color: var(--blue); }
+.tag-red { background: var(--danger-pale); color: var(--danger); }
+
+/* PICO */
+.pico-letter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--accent);
+  color: white;
+  font-family: 'DM Serif Display', serif;
+  font-size: 18px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.pico-section {
+  display: flex;
+  gap: 16px;
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+}
+.pico-section:last-child { border-bottom: none; }
+.pico-content { flex: 1; }
+.pico-content h4 {
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+.pico-content .pico-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+/* Sub tabs for bias */
+.sub-tab-bar {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 20px;
+  padding: 4px;
+  background: var(--surface2);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.sub-tab {
+  flex: 1;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.6px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  text-align: center;
+}
+.sub-tab:hover { color: var(--text); }
+.sub-tab.active { background: var(--accent); color: white; border-color: var(--accent); }
+.sub-panel { display: none; }
+.sub-panel.active { display: block; animation: fadeIn 0.25s ease; }
+
+/* Generated output */
+.output-box {
+  background: var(--gold-pale);
+  border: 1px solid #e8d5a0;
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-top: 16px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text);
+}
+.output-box h4 {
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 10px;
+}
+.output-box code {
+  background: rgba(0,0,0,0.06);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+/* SVG diagram area */
+.diagram-area {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  text-align: center;
+  overflow-x: auto;
+}
+
+/* Footer */
+footer {
+  background: var(--surface2);
+  border-top: 1px solid var(--border);
+  padding: 24px 32px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.8;
+}
+footer a { color: var(--accent); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .two-col, .three-col { grid-template-columns: 1fr; }
+  .container { padding: 20px 16px; }
+  .header-inner { padding: 28px 16px 24px; flex-direction: column; gap: 16px; align-items: flex-start; }
+  .nav-inner { padding: 0 8px; }
+  .nav-tab { padding: 12px 10px; font-size: 9px; }
+  .pico-section { flex-direction: column; }
+  .gantt-label { width: 100px; font-size: 10px; }
+}
+
+/* Print */
+@media print {
+  .nav-bar, .lang-toggle, .btn, header { display: none; }
+  .panel { display: block !important; page-break-inside: avoid; }
+  body { background: white; }
+  .card { box-shadow: none; border: 1px solid #ccc; }
+}
+
+/* Inline SVG text */
+.svg-text { font-family: 'DM Mono', monospace; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-title">
+      <h1 data-en="Study Design Assistant" data-zh="研究设计助手">Study Design Assistant</h1>
+      <div class="subtitle" data-en="Clinical & Epidemiological Research" data-zh="临床与流行病学研究">Clinical & Epidemiological Research</div>
+    </div>
+    <div class="lang-toggle">
+      <button class="lang-btn active" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" onclick="setLang('zh')">中文</button>
+    </div>
+  </div>
+</header>
+
+<nav class="nav-bar">
+  <div class="nav-inner">
+    <button class="nav-tab active" onclick="showPanel('design')" data-en="DESIGN SELECTOR" data-zh="设计选择器">DESIGN SELECTOR</button>
+    <button class="nav-tab" onclick="showPanel('pico')" data-en="PICO BUILDER" data-zh="PICO构建器">PICO BUILDER</button>
+    <button class="nav-tab" onclick="showPanel('bias')" data-en="BIAS ASSESSMENT" data-zh="偏倚评估">BIAS ASSESSMENT</button>
+    <button class="nav-tab" onclick="showPanel('reporting')" data-en="REPORTING GUIDELINES" data-zh="报告规范">REPORTING GUIDELINES</button>
+    <button class="nav-tab" onclick="showPanel('timeline')" data-en="TIMELINE PLANNER" data-zh="时间线规划">TIMELINE PLANNER</button>
+    <button class="nav-tab" onclick="showPanel('power')" data-en="POWER GUIDE" data-zh="功效指南">POWER GUIDE</button>
+  </div>
+</nav>
+
+<main class="container">
+
+<!-- ============================================================ -->
+<!-- TAB 1: STUDY DESIGN SELECTOR -->
+<!-- ============================================================ -->
+<div class="panel active" id="panel-design">
+  <div class="panel-header">
+    <h2 data-en="Study Design Selector" data-zh="研究设计选择器">Study Design Selector</h2>
+    <p class="desc" data-en="Answer the questions below to find the most appropriate study design for your research question." data-zh="回答以下问题，找到最适合您研究问题的研究设计。">Answer the questions below to find the most appropriate study design for your research question.</p>
+  </div>
+
+  <div id="dt-container">
+    <!-- Q1 -->
+    <div class="dt-question" id="dt-q1">
+      <div class="dt-step" data-en="STEP 1 OF 4" data-zh="第1步，共4步">STEP 1 OF 4</div>
+      <h3 data-en="What is your research question type?" data-zh="您的研究问题类型是什么？">What is your research question type?</h3>
+      <p data-en="Select the primary aim of your study." data-zh="选择您研究的主要目的。">Select the primary aim of your study.</p>
+      <div class="dt-options">
+        <button class="dt-option" onclick="dtSelect(1,'descriptive')" data-en="Describe frequency or distribution of a disease/condition" data-zh="描述疾病/状况的频率或分布"><span class="dt-arrow">&#9654;</span> <span>Describe frequency or distribution of a disease/condition</span></button>
+        <button class="dt-option" onclick="dtSelect(1,'analytical')" data-en="Test a hypothesis or compare groups" data-zh="检验假设或比较组间差异"><span class="dt-arrow">&#9654;</span> <span>Test a hypothesis or compare groups</span></button>
+        <button class="dt-option" onclick="dtSelect(1,'experimental')" data-en="Evaluate an intervention or treatment" data-zh="评估一项干预或治疗"><span class="dt-arrow">&#9654;</span> <span>Evaluate an intervention or treatment</span></button>
+      </div>
+    </div>
+
+    <!-- Q2: Analytical -->
+    <div class="dt-question" id="dt-q2" style="display:none">
+      <div class="dt-step" data-en="STEP 2 OF 4" data-zh="第2步，共4步">STEP 2 OF 4</div>
+      <h3 data-en="Direction of inquiry?" data-zh="研究方向是什么？">Direction of inquiry?</h3>
+      <p data-en="How will you relate exposure to outcome?" data-zh="您将如何关联暴露与结局？">How will you relate exposure to outcome?</p>
+      <div class="dt-options">
+        <button class="dt-option" onclick="dtSelect(2,'case-control')" data-en="Start from outcome, look back at exposure (Case-Control)" data-zh="从结局出发，回顾暴露（病例对照）"><span class="dt-arrow">&#9654;</span> <span>Start from outcome, look back at exposure (Case-Control)</span></button>
+        <button class="dt-option" onclick="dtSelect(2,'cohort')" data-en="Start from exposure, follow forward (Cohort)" data-zh="从暴露出发，前瞻性随访（队列）"><span class="dt-arrow">&#9654;</span> <span>Start from exposure, follow forward (Cohort)</span></button>
+        <button class="dt-option" onclick="dtSelect(2,'cross-sectional')" data-en="Measure both at the same time (Cross-Sectional)" data-zh="同时测量暴露和结局（横断面）"><span class="dt-arrow">&#9654;</span> <span>Measure both at the same time (Cross-Sectional)</span></button>
+      </div>
+    </div>
+
+    <!-- Q3: Experimental -->
+    <div class="dt-question" id="dt-q3" style="display:none">
+      <div class="dt-step" data-en="STEP 2 OF 4" data-zh="第2步，共4步">STEP 2 OF 4</div>
+      <h3 data-en="Is there randomization?" data-zh="是否有随机化？">Is there randomization?</h3>
+      <p data-en="How are participants allocated to groups?" data-zh="参与者如何被分配到各组？">How are participants allocated to groups?</p>
+      <div class="dt-options">
+        <button class="dt-option" onclick="dtSelect(3,'rct')" data-en="Yes, individual randomization (RCT)" data-zh="是，个体随机化（RCT）"><span class="dt-arrow">&#9654;</span> <span>Yes, individual randomization (RCT)</span></button>
+        <button class="dt-option" onclick="dtSelect(3,'cluster-rct')" data-en="Yes, cluster-level randomization (Cluster RCT)" data-zh="是，群组水平随机化（整群RCT）"><span class="dt-arrow">&#9654;</span> <span>Yes, cluster-level randomization (Cluster RCT)</span></button>
+        <button class="dt-option" onclick="dtSelect(3,'quasi')" data-en="No randomization (Quasi-experimental)" data-zh="无随机化（准实验设计）"><span class="dt-arrow">&#9654;</span> <span>No randomization (Quasi-experimental)</span></button>
+      </div>
+    </div>
+
+    <!-- Q3b: RCT subtype -->
+    <div class="dt-question" id="dt-q3b" style="display:none">
+      <div class="dt-step" data-en="STEP 3 OF 4" data-zh="第3步，共4步">STEP 3 OF 4</div>
+      <h3 data-en="RCT Design Type?" data-zh="RCT设计类型？">RCT Design Type?</h3>
+      <p data-en="Select the specific randomized trial design." data-zh="选择具体的随机试验设计。">Select the specific randomized trial design.</p>
+      <div class="dt-options">
+        <button class="dt-option" onclick="dtSelect('3b','parallel')" data-en="Parallel group — each group receives one treatment" data-zh="平行组 — 每组接受一种治疗"><span class="dt-arrow">&#9654;</span> <span>Parallel group -- each group receives one treatment</span></button>
+        <button class="dt-option" onclick="dtSelect('3b','crossover')" data-en="Crossover — each participant receives all treatments in sequence" data-zh="交叉设计 — 每位参与者依次接受所有治疗"><span class="dt-arrow">&#9654;</span> <span>Crossover -- each participant receives all treatments in sequence</span></button>
+        <button class="dt-option" onclick="dtSelect('3b','factorial')" data-en="Factorial — test 2+ interventions simultaneously" data-zh="析因设计 — 同时检验2+干预"><span class="dt-arrow">&#9654;</span> <span>Factorial -- test 2+ interventions simultaneously</span></button>
+      </div>
+    </div>
+
+    <!-- Q4: Additional features -->
+    <div class="dt-question" id="dt-q4" style="display:none">
+      <div class="dt-step" data-en="STEP 4 OF 4 (OPTIONAL)" data-zh="第4步，共4步（可选）">STEP 4 OF 4 (OPTIONAL)</div>
+      <h3 data-en="Additional design features?" data-zh="额外设计特征？">Additional design features?</h3>
+      <p data-en="Select any additional design considerations (optional)." data-zh="选择任何额外的设计考虑（可选）。">Select any additional design considerations (optional).</p>
+      <div class="dt-options">
+        <button class="dt-option" onclick="dtSelect(4,'superiority')" data-en="Superiority — prove intervention is better" data-zh="优效性 — 证明干预更好"><span class="dt-arrow">&#9654;</span> <span>Superiority -- prove intervention is better</span></button>
+        <button class="dt-option" onclick="dtSelect(4,'non-inferiority')" data-en="Non-inferiority — prove intervention is not worse" data-zh="非劣效性 — 证明干预不差于"><span class="dt-arrow">&#9654;</span> <span>Non-inferiority -- prove intervention is not worse</span></button>
+        <button class="dt-option" onclick="dtSelect(4,'equivalence')" data-en="Equivalence — prove interventions are similar" data-zh="等效性 — 证明干预效果相似"><span class="dt-arrow">&#9654;</span> <span>Equivalence -- prove interventions are similar</span></button>
+        <button class="dt-option" onclick="dtSelect(4,'adaptive')" data-en="Adaptive design — modify trial based on interim data" data-zh="适应性设计 — 基于中期数据修改试验"><span class="dt-arrow">&#9654;</span> <span>Adaptive design -- modify trial based on interim data</span></button>
+        <button class="dt-option" onclick="dtSelect(4,'none')" data-en="None / Skip this step" data-zh="无 / 跳过此步"><span class="dt-arrow">&#9654;</span> <span>None / Skip this step</span></button>
+      </div>
+    </div>
+  </div>
+
+  <div id="dt-result" style="display:none"></div>
+
+  <div style="margin-top:20px">
+    <button class="btn" onclick="dtReset()" data-en="Reset Decision Tree" data-zh="重置决策树">Reset Decision Tree</button>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 2: PICO BUILDER -->
+<!-- ============================================================ -->
+<div class="panel" id="panel-pico">
+  <div class="panel-header">
+    <h2 data-en="PICO Framework Builder" data-zh="PICO框架构建器">PICO Framework Builder</h2>
+    <p class="desc" data-en="Formulate a structured research question using the PICO framework." data-zh="使用PICO框架构建结构化研究问题。">Formulate a structured research question using the PICO framework.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-body" style="padding:0">
+      <!-- P -->
+      <div class="pico-section">
+        <div class="pico-letter">P</div>
+        <div class="pico-content">
+          <h4 data-en="Population" data-zh="人群">Population</h4>
+          <p class="pico-desc" data-en="Who are the patients or participants?" data-zh="患者或参与者是谁？">Who are the patients or participants?</p>
+          <div class="two-col" style="gap:12px">
+            <div class="field-group">
+              <label data-en="Condition / Disease" data-zh="疾病/状况">Condition / Disease</label>
+              <input type="text" id="pico-condition" placeholder="e.g., Type 2 Diabetes">
+            </div>
+            <div class="field-group">
+              <label data-en="Age Range" data-zh="年龄范围">Age Range</label>
+              <input type="text" id="pico-age" placeholder="e.g., 18-65 years">
+            </div>
+          </div>
+          <div class="two-col" style="gap:12px;margin-top:12px">
+            <div class="field-group">
+              <label data-en="Setting" data-zh="研究场所">Setting</label>
+              <input type="text" id="pico-setting" placeholder="e.g., Primary care clinics">
+            </div>
+            <div class="field-group">
+              <label data-en="Key Inclusion Criteria" data-zh="主要纳入标准">Key Inclusion Criteria</label>
+              <input type="text" id="pico-inclusion" placeholder="e.g., HbA1c > 7.0%">
+            </div>
+          </div>
+          <div class="field-group" style="margin-top:12px">
+            <label data-en="Key Exclusion Criteria" data-zh="主要排除标准">Key Exclusion Criteria</label>
+            <input type="text" id="pico-exclusion" placeholder="e.g., Renal failure, pregnancy">
+          </div>
+        </div>
+      </div>
+      <!-- I -->
+      <div class="pico-section">
+        <div class="pico-letter">I</div>
+        <div class="pico-content">
+          <h4 data-en="Intervention / Exposure" data-zh="干预/暴露">Intervention / Exposure</h4>
+          <p class="pico-desc" data-en="What treatment, exposure, or diagnostic test?" data-zh="什么治疗、暴露或诊断测试？">What treatment, exposure, or diagnostic test?</p>
+          <div class="field-group">
+            <label data-en="Description" data-zh="描述">Description</label>
+            <input type="text" id="pico-intervention" placeholder="e.g., GLP-1 receptor agonist (semaglutide 1mg weekly)">
+          </div>
+          <div class="two-col" style="gap:12px;margin-top:12px">
+            <div class="field-group">
+              <label data-en="Dosage / Intensity (if applicable)" data-zh="剂量/强度（如适用）">Dosage / Intensity (if applicable)</label>
+              <input type="text" id="pico-dosage" placeholder="e.g., 1mg subcutaneous weekly">
+            </div>
+            <div class="field-group">
+              <label data-en="Duration" data-zh="持续时间">Duration</label>
+              <input type="text" id="pico-duration" placeholder="e.g., 52 weeks">
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- C -->
+      <div class="pico-section">
+        <div class="pico-letter">C</div>
+        <div class="pico-content">
+          <h4 data-en="Comparator" data-zh="对照">Comparator</h4>
+          <p class="pico-desc" data-en="What is the comparison group?" data-zh="对照组是什么？">What is the comparison group?</p>
+          <div class="field-group">
+            <label data-en="Comparator Type" data-zh="对照类型">Comparator Type</label>
+            <select id="pico-comp-type">
+              <option value="active" data-en="Active control" data-zh="阳性对照">Active control</option>
+              <option value="placebo" data-en="Placebo" data-zh="安慰剂">Placebo</option>
+              <option value="standard" data-en="Standard of care" data-zh="标准治疗">Standard of care</option>
+              <option value="none" data-en="No intervention" data-zh="无干预">No intervention</option>
+            </select>
+          </div>
+          <div class="field-group" style="margin-top:12px">
+            <label data-en="Comparator Description" data-zh="对照描述">Comparator Description</label>
+            <input type="text" id="pico-comparator" placeholder="e.g., Metformin 2000mg daily">
+          </div>
+        </div>
+      </div>
+      <!-- O -->
+      <div class="pico-section">
+        <div class="pico-letter">O</div>
+        <div class="pico-content">
+          <h4 data-en="Outcome" data-zh="结局">Outcome</h4>
+          <p class="pico-desc" data-en="What outcome are you measuring?" data-zh="您测量什么结局？">What outcome are you measuring?</p>
+          <div class="field-group">
+            <label data-en="Primary Outcome" data-zh="主要结局">Primary Outcome</label>
+            <input type="text" id="pico-primary" placeholder="e.g., Change in HbA1c from baseline">
+          </div>
+          <div class="two-col" style="gap:12px;margin-top:12px">
+            <div class="field-group">
+              <label data-en="Secondary Outcomes" data-zh="次要结局">Secondary Outcomes</label>
+              <input type="text" id="pico-secondary" placeholder="e.g., Weight change, adverse events">
+            </div>
+            <div class="field-group">
+              <label data-en="Outcome Type" data-zh="结局类型">Outcome Type</label>
+              <select id="pico-outcome-type">
+                <option value="continuous" data-en="Continuous (mean)" data-zh="连续型（均数）">Continuous (mean)</option>
+                <option value="binary" data-en="Binary (proportion)" data-zh="二分类（比例）">Binary (proportion)</option>
+                <option value="time-to-event" data-en="Time-to-event (survival)" data-zh="至事件时间（生存）">Time-to-event (survival)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn btn-primary" onclick="generatePICO()" data-en="Generate Research Question" data-zh="生成研究问题">Generate Research Question</button>
+
+  <div id="pico-output" style="display:none"></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 3: BIAS ASSESSMENT -->
+<!-- ============================================================ -->
+<div class="panel" id="panel-bias">
+  <div class="panel-header">
+    <h2 data-en="Bias Assessment Checklist" data-zh="偏倚评估检查清单">Bias Assessment Checklist</h2>
+    <p class="desc" data-en="Assess risk of bias using validated tools appropriate to your study design." data-zh="使用适合您研究设计的经验证工具评估偏倚风险。">Assess risk of bias using validated tools appropriate to your study design.</p>
+  </div>
+
+  <div class="sub-tab-bar">
+    <button class="sub-tab active" onclick="showBiasSub('rob2')">RoB 2 (RCTs)</button>
+    <button class="sub-tab" onclick="showBiasSub('nos')">NOS (Observational)</button>
+    <button class="sub-tab" onclick="showBiasSub('quadas')">QUADAS-2 (Diagnostic)</button>
+  </div>
+
+  <!-- RoB 2 -->
+  <div class="sub-panel active" id="bias-rob2">
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-header" data-en="COCHRANE RISK OF BIAS 2.0 (RoB 2) &mdash; Sterne et al., BMJ 2019" data-zh="COCHRANE偏倚风险2.0 (RoB 2) &mdash; Sterne等, BMJ 2019">COCHRANE RISK OF BIAS 2.0 (RoB 2) &mdash; Sterne et al., BMJ 2019</div>
+      <div class="card-body" style="padding:0" id="rob2-domains"></div>
+    </div>
+    <div class="two-col">
+      <div>
+        <div class="card">
+          <div class="card-header" data-en="OVERALL RISK OF BIAS" data-zh="总体偏倚风险">OVERALL RISK OF BIAS</div>
+          <div class="card-body" id="rob2-summary" style="text-align:center;padding:24px;">
+            <div class="traffic-light tl-low" style="font-size:14px;padding:8px 20px;" data-en="Low Risk" data-zh="低风险">Low Risk</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-header" data-en="TRAFFIC LIGHT PLOT" data-zh="交通灯图">TRAFFIC LIGHT PLOT</div>
+          <div class="card-body" id="rob2-traffic"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOS -->
+  <div class="sub-panel" id="bias-nos">
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-header" data-en="NEWCASTLE-OTTAWA SCALE (NOS) &mdash; Wells et al." data-zh="纽卡斯尔-渥太华量表 (NOS) &mdash; Wells等">NEWCASTLE-OTTAWA SCALE (NOS) &mdash; Wells et al.</div>
+      <div class="card-body" style="padding:0" id="nos-domains"></div>
+    </div>
+    <div class="two-col">
+      <div>
+        <div class="card">
+          <div class="card-header" data-en="NOS SCORE" data-zh="NOS评分">NOS SCORE</div>
+          <div class="card-body" id="nos-summary" style="text-align:center;padding:24px;">
+            <div style="font-family:'DM Serif Display',serif;font-size:36px;color:var(--accent)">0 / 9</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:4px" data-en="stars awarded" data-zh="获得星数">stars awarded</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-header" data-en="QUALITY RATING" data-zh="质量评级">QUALITY RATING</div>
+          <div class="card-body" id="nos-quality" style="text-align:center;padding:24px;">
+            <div class="traffic-light tl-high" style="font-size:14px;padding:8px 20px;" data-en="Poor" data-zh="差">Poor</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:8px" data-en="Good: 7-9 | Fair: 4-6 | Poor: 0-3" data-zh="好: 7-9 | 一般: 4-6 | 差: 0-3">Good: 7-9 | Fair: 4-6 | Poor: 0-3</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUADAS-2 -->
+  <div class="sub-panel" id="bias-quadas">
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-header" data-en="QUADAS-2 &mdash; Whiting et al., Ann Intern Med 2011" data-zh="QUADAS-2 &mdash; Whiting等, Ann Intern Med 2011">QUADAS-2 &mdash; Whiting et al., Ann Intern Med 2011</div>
+      <div class="card-body" style="padding:0" id="quadas-domains"></div>
+    </div>
+    <div class="two-col">
+      <div>
+        <div class="card">
+          <div class="card-header" data-en="OVERALL RISK OF BIAS" data-zh="总体偏倚风险">OVERALL RISK OF BIAS</div>
+          <div class="card-body" id="quadas-summary" style="text-align:center;padding:24px;">
+            <div class="traffic-light tl-low" style="font-size:14px;padding:8px 20px;" data-en="Low Risk" data-zh="低风险">Low Risk</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-header" data-en="APPLICABILITY CONCERNS" data-zh="适用性关注">APPLICABILITY CONCERNS</div>
+          <div class="card-body" id="quadas-applicability" style="text-align:center;padding:24px;">
+            <div class="traffic-light tl-low" style="font-size:14px;padding:8px 20px;" data-en="Low Concern" data-zh="低关注">Low Concern</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 4: REPORTING GUIDELINES -->
+<!-- ============================================================ -->
+<div class="panel" id="panel-reporting">
+  <div class="panel-header">
+    <h2 data-en="Reporting Guideline Checker" data-zh="报告规范检查">Reporting Guideline Checker</h2>
+    <p class="desc" data-en="Interactive checklists for major reporting guidelines. Track your progress and ensure complete reporting." data-zh="主要报告规范的交互式检查清单。跟踪您的进度并确保报告完整。">Interactive checklists for major reporting guidelines. Track your progress and ensure complete reporting.</p>
+  </div>
+
+  <div class="sub-tab-bar">
+    <button class="sub-tab active" onclick="showReportSub('consort')">CONSORT</button>
+    <button class="sub-tab" onclick="showReportSub('strobe')">STROBE</button>
+    <button class="sub-tab" onclick="showReportSub('prisma')">PRISMA</button>
+    <button class="sub-tab" onclick="showReportSub('stard')">STARD</button>
+    <button class="sub-tab" onclick="showReportSub('spirit')">SPIRIT</button>
+  </div>
+
+  <div id="reporting-content"></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 5: TIMELINE PLANNER -->
+<!-- ============================================================ -->
+<div class="panel" id="panel-timeline">
+  <div class="panel-header">
+    <h2 data-en="Study Timeline Planner" data-zh="研究时间线规划器">Study Timeline Planner</h2>
+    <p class="desc" data-en="Plan your study phases and generate a visual Gantt chart." data-zh="规划您的研究阶段并生成可视化甘特图。">Plan your study phases and generate a visual Gantt chart.</p>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <div class="card">
+        <div class="card-header" data-en="STUDY PARAMETERS" data-zh="研究参数">STUDY PARAMETERS</div>
+        <div class="card-body">
+          <div class="field-group">
+            <label data-en="Study Start Date" data-zh="研究开始日期">Study Start Date</label>
+            <input type="date" id="tl-start" value="2026-07-01">
+          </div>
+          <div class="field-group">
+            <label data-en="Template" data-zh="模板">Template</label>
+            <select id="tl-template" onchange="loadTemplate()">
+              <option value="rct" data-en="Randomized Controlled Trial" data-zh="随机对照试验">Randomized Controlled Trial</option>
+              <option value="cohort" data-en="Prospective Cohort Study" data-zh="前瞻性队列研究">Prospective Cohort Study</option>
+              <option value="cross" data-en="Cross-Sectional Study" data-zh="横断面研究">Cross-Sectional Study</option>
+              <option value="custom" data-en="Custom" data-zh="自定义">Custom</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header" data-en="STUDY PHASES" data-zh="研究阶段">STUDY PHASES</div>
+        <div class="card-body" id="tl-phases"></div>
+      </div>
+      <button class="btn btn-primary" onclick="generateGantt()" style="margin-top:16px" data-en="Generate Gantt Chart" data-zh="生成甘特图">Generate Gantt Chart</button>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-header" data-en="GANTT CHART" data-zh="甘特图">GANTT CHART</div>
+        <div class="card-body" id="tl-gantt">
+          <p style="font-size:12px;color:var(--text-muted);text-align:center;padding:40px 0" data-en="Configure phases and click Generate to see your timeline." data-zh="配置阶段后点击生成查看时间线。">Configure phases and click Generate to see your timeline.</p>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-header" data-en="MILESTONES" data-zh="里程碑">MILESTONES</div>
+        <div class="card-body" id="tl-milestones">
+          <p style="font-size:12px;color:var(--text-muted);text-align:center;padding:20px 0" data-en="Milestones will appear after generating the chart." data-zh="生成图表后将显示里程碑。">Milestones will appear after generating the chart.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 6: POWER & EFFECT SIZE GUIDE -->
+<!-- ============================================================ -->
+<div class="panel" id="panel-power">
+  <div class="panel-header">
+    <h2 data-en="Power & Effect Size Guide" data-zh="功效与效应量指南">Power & Effect Size Guide</h2>
+    <p class="desc" data-en="Educational reference for statistical power, effect sizes, and sample size planning. For calculations, use the " data-zh="统计功效、效应量和样本量规划的教育参考。如需计算，请使用">Educational reference for statistical power, effect sizes, and sample size planning. For calculations, use the <a href="../sample-size-calculator/index.html" style="color:var(--accent)">Sample Size Calculator</a>.</p>
+  </div>
+
+  <div class="sub-tab-bar">
+    <button class="sub-tab active" onclick="showPowerSub('cohen')">Cohen's Conventions</button>
+    <button class="sub-tab" onclick="showPowerSub('domain')">Effect Sizes by Domain</button>
+    <button class="sub-tab" onclick="showPowerSub('quickref')">Quick Reference</button>
+    <button class="sub-tab" onclick="showPowerSub('mcid')">MCID Guide</button>
+    <button class="sub-tab" onclick="showPowerSub('errors')">Type I & II Errors</button>
+  </div>
+
+  <!-- Cohen's Conventions -->
+  <div class="sub-panel active" id="power-cohen">
+    <div class="card">
+      <div class="card-header" data-en="COHEN'S CONVENTIONS FOR EFFECT SIZE INTERPRETATION &mdash; Cohen, 1988" data-zh="COHEN效应量解释标准 &mdash; Cohen, 1988">COHEN'S CONVENTIONS FOR EFFECT SIZE INTERPRETATION &mdash; Cohen, 1988</div>
+      <div class="card-body" style="overflow-x:auto">
+        <table class="ref-table">
+          <thead>
+            <tr>
+              <th data-en="Measure" data-zh="测量指标">Measure</th>
+              <th data-en="Context" data-zh="使用场景">Context</th>
+              <th data-en="Small" data-zh="小">Small</th>
+              <th data-en="Medium" data-zh="中等">Medium</th>
+              <th data-en="Large" data-zh="大">Large</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Cohen's <em>d</em></td><td data-en="Two-group mean difference" data-zh="两组均数差">Two-group mean difference</td><td class="mono">0.2</td><td class="mono">0.5</td><td class="mono">0.8</td></tr>
+            <tr><td>Pearson's <em>r</em></td><td data-en="Correlation" data-zh="相关">Correlation</td><td class="mono">0.1</td><td class="mono">0.3</td><td class="mono">0.5</td></tr>
+            <tr><td>Odds Ratio (OR)</td><td data-en="Case-control" data-zh="病例对照">Case-control</td><td class="mono">1.5</td><td class="mono">2.5</td><td class="mono">4.3</td></tr>
+            <tr><td>Risk Ratio (RR)</td><td data-en="Cohort / RCT" data-zh="队列/RCT">Cohort / RCT</td><td class="mono">1.2</td><td class="mono">1.8</td><td class="mono">3.0</td></tr>
+            <tr><td>Hazard Ratio (HR)</td><td data-en="Survival analysis" data-zh="生存分析">Survival analysis</td><td class="mono">1.2</td><td class="mono">1.8</td><td class="mono">3.0</td></tr>
+            <tr><td>Cohen's <em>f</em>&sup2;</td><td data-en="Multiple regression" data-zh="多元回归">Multiple regression</td><td class="mono">0.02</td><td class="mono">0.15</td><td class="mono">0.35</td></tr>
+            <tr><td>Eta-squared (&eta;&sup2;)</td><td data-en="ANOVA" data-zh="方差分析">ANOVA</td><td class="mono">0.01</td><td class="mono">0.06</td><td class="mono">0.14</td></tr>
+            <tr><td>Number Needed to Treat (NNT)</td><td data-en="Clinical trials" data-zh="临床试验">Clinical trials</td><td class="mono">&gt;10</td><td class="mono">4-10</td><td class="mono">&lt;4</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:11px;color:var(--text-muted);margin-top:12px;line-height:1.6" data-en="Note: Cohen's conventions are general guidelines. Effect size interpretation should always be contextualized within the specific research domain. A &quot;small&quot; effect may be clinically meaningful in some fields." data-zh="注意：Cohen标准是一般性指南。效应量解释应始终在特定研究领域内进行语境化。在某些领域，"小"效应可能具有临床意义。">Note: Cohen's conventions are general guidelines. Effect size interpretation should always be contextualized within the specific research domain. A "small" effect may be clinically meaningful in some fields.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Effect Sizes by Domain -->
+  <div class="sub-panel" id="power-domain">
+    <div class="card">
+      <div class="card-header" data-en="TYPICAL EFFECT SIZES BY CLINICAL DOMAIN (LITERATURE-BASED)" data-zh="各临床领域的典型效应量（基于文献）">TYPICAL EFFECT SIZES BY CLINICAL DOMAIN (LITERATURE-BASED)</div>
+      <div class="card-body" style="overflow-x:auto">
+        <table class="ref-table">
+          <thead>
+            <tr>
+              <th data-en="Domain" data-zh="领域">Domain</th>
+              <th data-en="Typical Comparison" data-zh="典型比较">Typical Comparison</th>
+              <th data-en="Effect Size" data-zh="效应量">Effect Size</th>
+              <th data-en="Measure" data-zh="测量指标">Measure</th>
+              <th data-en="Reference" data-zh="参考文献">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td data-en="Cardiology" data-zh="心脏病学">Cardiology</td><td data-en="Statin vs placebo (MACE)" data-zh="他汀vs安慰剂(MACE)">Statin vs placebo (MACE)</td><td class="mono">HR 0.75-0.85</td><td>HR</td><td>CTT Collaboration, Lancet 2010</td></tr>
+            <tr><td data-en="Oncology" data-zh="肿瘤学">Oncology</td><td data-en="Immunotherapy vs chemo (OS)" data-zh="免疫治疗vs化疗(OS)">Immunotherapy vs chemo (OS)</td><td class="mono">HR 0.60-0.80</td><td>HR</td><td>Reck et al., NEJM 2016</td></tr>
+            <tr><td data-en="Psychiatry" data-zh="精神病学">Psychiatry</td><td data-en="Antidepressant vs placebo" data-zh="抗抑郁药vs安慰剂">Antidepressant vs placebo</td><td class="mono">d = 0.30</td><td>SMD</td><td>Cipriani et al., Lancet 2018</td></tr>
+            <tr><td data-en="Orthopedics" data-zh="骨科">Orthopedics</td><td data-en="Surgery vs conservative (pain)" data-zh="手术vs保守治疗(疼痛)">Surgery vs conservative (pain)</td><td class="mono">d = 0.40-0.60</td><td>SMD</td><td>Thorlund et al., BMJ 2015</td></tr>
+            <tr><td data-en="Diabetes" data-zh="糖尿病">Diabetes</td><td data-en="GLP-1 RA vs placebo (HbA1c)" data-zh="GLP-1 RA vs安慰剂(HbA1c)">GLP-1 RA vs placebo (HbA1c)</td><td class="mono">d = 0.80-1.20</td><td>SMD</td><td>Htike et al., Diabetes Obes Metab 2017</td></tr>
+            <tr><td data-en="Infectious Disease" data-zh="传染病学">Infectious Disease</td><td data-en="Vaccine efficacy" data-zh="疫苗效力">Vaccine efficacy</td><td class="mono">RR 0.05-0.50</td><td>RR</td><td>Varies by pathogen</td></tr>
+            <tr><td data-en="Surgery" data-zh="外科">Surgery</td><td data-en="Laparoscopic vs open (LOS)" data-zh="腹腔镜vs开放(住院天数)">Laparoscopic vs open (LOS)</td><td class="mono">d = 0.50-0.80</td><td>SMD</td><td>Sauerland et al., Cochrane 2011</td></tr>
+            <tr><td data-en="Primary Care" data-zh="初级保健">Primary Care</td><td data-en="Behavioral intervention" data-zh="行为干预">Behavioral intervention</td><td class="mono">d = 0.20-0.40</td><td>SMD</td><td>Orrow et al., BMJ 2012</td></tr>
+            <tr><td data-en="Neurology" data-zh="神经病学">Neurology</td><td data-en="Disease-modifying therapy (MS)" data-zh="疾病修饰治疗(MS)">Disease-modifying therapy (MS)</td><td class="mono">RR 0.50-0.70</td><td>RR</td><td>Tramacere et al., Cochrane 2015</td></tr>
+            <tr><td data-en="Public Health" data-zh="公共卫生">Public Health</td><td data-en="Health promotion programs" data-zh="健康促进项目">Health promotion programs</td><td class="mono">d = 0.10-0.30</td><td>SMD</td><td>Johnson et al., Health Psychol Rev 2015</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Reference Tables -->
+  <div class="sub-panel" id="power-quickref">
+    <div class="card">
+      <div class="card-header" data-en="SAMPLE SIZE QUICK REFERENCE (TWO-GROUP, 80% POWER, &alpha;=0.05, TWO-SIDED)" data-zh="样本量快速参考（两组, 80%功效, &alpha;=0.05, 双侧）">SAMPLE SIZE QUICK REFERENCE (TWO-GROUP, 80% POWER, &alpha;=0.05, TWO-SIDED)</div>
+      <div class="card-body" style="overflow-x:auto">
+        <h4 style="font-size:12px;margin-bottom:12px" data-en="Continuous Outcome (per group, equal allocation)" data-zh="连续型结局（每组，等比分配）">Continuous Outcome (per group, equal allocation)</h4>
+        <table class="ref-table">
+          <thead>
+            <tr><th>Cohen's d</th><th data-en="Per Group" data-zh="每组">Per Group</th><th data-en="Total" data-zh="总计">Total</th><th data-en="Interpretation" data-zh="解释">Interpretation</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="mono">0.2</td><td class="mono">394</td><td class="mono">788</td><td data-en="Small effect" data-zh="小效应">Small effect</td></tr>
+            <tr><td class="mono">0.3</td><td class="mono">176</td><td class="mono">352</td><td data-en="Small-medium" data-zh="小-中效应">Small-medium</td></tr>
+            <tr><td class="mono">0.5</td><td class="mono">64</td><td class="mono">128</td><td data-en="Medium effect" data-zh="中等效应">Medium effect</td></tr>
+            <tr><td class="mono">0.8</td><td class="mono">26</td><td class="mono">52</td><td data-en="Large effect" data-zh="大效应">Large effect</td></tr>
+            <tr><td class="mono">1.0</td><td class="mono">17</td><td class="mono">34</td><td data-en="Very large" data-zh="非常大">Very large</td></tr>
+          </tbody>
+        </table>
+        <h4 style="font-size:12px;margin:20px 0 12px" data-en="Binary Outcome (per group, equal allocation)" data-zh="二分类结局（每组，等比分配）">Binary Outcome (per group, equal allocation)</h4>
+        <table class="ref-table">
+          <thead>
+            <tr><th data-en="Control Rate" data-zh="对照组率">Control Rate</th><th data-en="Treatment Rate" data-zh="治疗组率">Treatment Rate</th><th data-en="RR" data-zh="RR">RR</th><th data-en="Per Group" data-zh="每组">Per Group</th><th data-en="Total" data-zh="总计">Total</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="mono">30%</td><td class="mono">20%</td><td class="mono">0.67</td><td class="mono">294</td><td class="mono">588</td></tr>
+            <tr><td class="mono">30%</td><td class="mono">15%</td><td class="mono">0.50</td><td class="mono">120</td><td class="mono">240</td></tr>
+            <tr><td class="mono">50%</td><td class="mono">35%</td><td class="mono">0.70</td><td class="mono">168</td><td class="mono">336</td></tr>
+            <tr><td class="mono">50%</td><td class="mono">30%</td><td class="mono">0.60</td><td class="mono">88</td><td class="mono">176</td></tr>
+            <tr><td class="mono">10%</td><td class="mono">5%</td><td class="mono">0.50</td><td class="mono">434</td><td class="mono">868</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:11px;color:var(--text-muted);margin-top:12px" data-en="For exact calculations, use the Sample Size Calculator." data-zh="如需精确计算，请使用样本量计算器。">For exact calculations, use the <a href="../sample-size-calculator/index.html" style="color:var(--accent)">Sample Size Calculator</a>.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MCID Guide -->
+  <div class="sub-panel" id="power-mcid">
+    <div class="card">
+      <div class="card-header" data-en="MINIMUM CLINICALLY IMPORTANT DIFFERENCE (MCID)" data-zh="最小临床重要差异 (MCID)">MINIMUM CLINICALLY IMPORTANT DIFFERENCE (MCID)</div>
+      <div class="card-body">
+        <p style="font-size:13px;line-height:1.7;margin-bottom:16px" data-en="The MCID is the smallest change in outcome that patients or clinicians consider meaningful. It is critical for sample size calculation — using the MCID as the target difference ensures your study is powered to detect clinically relevant effects, not just statistically significant ones." data-zh="MCID是患者或临床医生认为有意义的最小结局变化。它对样本量计算至关重要 — 将MCID作为目标差异可确保您的研究有足够的功效来检测临床相关效应，而不仅仅是统计学显著的效应。">The MCID is the smallest change in outcome that patients or clinicians consider meaningful. It is critical for sample size calculation &mdash; using the MCID as the target difference ensures your study is powered to detect clinically relevant effects, not just statistically significant ones.</p>
+        <h4 style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--accent);margin-bottom:10px" data-en="ESTABLISHED MCIDs FOR COMMON INSTRUMENTS" data-zh="常用工具的已确立MCID">ESTABLISHED MCIDs FOR COMMON INSTRUMENTS</h4>
+        <table class="ref-table">
+          <thead><tr><th data-en="Instrument" data-zh="工具">Instrument</th><th>MCID</th><th data-en="Domain" data-zh="领域">Domain</th><th data-en="Method" data-zh="方法">Method</th></tr></thead>
+          <tbody>
+            <tr><td>SF-36 (PCS/MCS)</td><td class="mono">3-5 points</td><td data-en="Quality of Life" data-zh="生活质量">Quality of Life</td><td data-en="Anchor-based" data-zh="锚定法">Anchor-based</td></tr>
+            <tr><td>EQ-5D-5L VAS</td><td class="mono">7-10 points</td><td data-en="Quality of Life" data-zh="生活质量">Quality of Life</td><td data-en="Anchor-based" data-zh="锚定法">Anchor-based</td></tr>
+            <tr><td>HbA1c</td><td class="mono">0.3-0.5%</td><td data-en="Diabetes" data-zh="糖尿病">Diabetes</td><td data-en="Clinical consensus" data-zh="临床共识">Clinical consensus</td></tr>
+            <tr><td>VAS Pain (0-100)</td><td class="mono">10-15 mm</td><td data-en="Pain" data-zh="疼痛">Pain</td><td data-en="Anchor-based" data-zh="锚定法">Anchor-based</td></tr>
+            <tr><td>6-Minute Walk Test</td><td class="mono">30-50 m</td><td data-en="Functional capacity" data-zh="功能能力">Functional capacity</td><td data-en="Anchor + distribution" data-zh="锚定+分布法">Anchor + distribution</td></tr>
+            <tr><td>PHQ-9</td><td class="mono">5 points</td><td data-en="Depression" data-zh="抑郁">Depression</td><td data-en="Anchor-based" data-zh="锚定法">Anchor-based</td></tr>
+            <tr><td>FEV1 (% predicted)</td><td class="mono">5-10%</td><td data-en="Pulmonology" data-zh="肺科">Pulmonology</td><td data-en="Anchor-based" data-zh="锚定法">Anchor-based</td></tr>
+            <tr><td>WOMAC (pain subscale)</td><td class="mono">9-12 points</td><td data-en="Orthopedics" data-zh="骨科">Orthopedics</td><td data-en="Anchor-based" data-zh="锚定法">Anchor-based</td></tr>
+          </tbody>
+        </table>
+        <h4 style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--accent);margin:20px 0 10px" data-en="METHODS FOR DETERMINING MCID" data-zh="确定MCID的方法">METHODS FOR DETERMINING MCID</h4>
+        <div class="two-col">
+          <div style="font-size:12px;line-height:1.7;color:var(--text-muted)">
+            <strong data-en="Anchor-based methods" data-zh="锚定法">Anchor-based methods</strong><br>
+            <span data-en="Compare change scores against an external criterion (patient global rating, clinical milestone). Preferred by regulatory agencies. Requires a suitable anchor with moderate correlation (r &ge; 0.3) with the target measure." data-zh="将变化评分与外部标准（患者总体评级、临床里程碑）进行比较。监管机构首选。需要一个与目标测量有中等相关性（r≥0.3）的合适锚定。">Compare change scores against an external criterion (patient global rating, clinical milestone). Preferred by regulatory agencies. Requires a suitable anchor with moderate correlation (r &ge; 0.3) with the target measure.</span>
+          </div>
+          <div style="font-size:12px;line-height:1.7;color:var(--text-muted)">
+            <strong data-en="Distribution-based methods" data-zh="分布法">Distribution-based methods</strong><br>
+            <span data-en="Use statistical properties: 0.5 SD (Norman et al., 2003), Standard Error of Measurement (SEM), or Effect Size thresholds. These provide a lower bound but lack clinical context." data-zh="使用统计属性：0.5 SD (Norman等, 2003)、测量标准误 (SEM) 或效应量阈值。这些提供了下限但缺乏临床背景。">Use statistical properties: 0.5 SD (Norman et al., 2003), Standard Error of Measurement (SEM), or Effect Size thresholds. These provide a lower bound but lack clinical context.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Type I and Type II Errors -->
+  <div class="sub-panel" id="power-errors">
+    <div class="card">
+      <div class="card-header" data-en="TYPE I AND TYPE II ERRORS" data-zh="I类和II类错误">TYPE I AND TYPE II ERRORS</div>
+      <div class="card-body">
+        <div class="diagram-area" style="margin-bottom:20px">
+          <svg viewBox="0 0 600 280" width="100%" style="max-width:600px">
+            <style>.svg-text{font-family:'DM Mono',monospace;fill:#1a1610}.svg-small{font-size:10px}.svg-label{font-size:12px;font-weight:500}.svg-title{font-size:13px;font-weight:600}</style>
+            <!-- Header -->
+            <text x="300" y="24" text-anchor="middle" class="svg-text svg-title">Decision Matrix</text>
+            <!-- Column headers -->
+            <text x="370" y="56" text-anchor="middle" class="svg-text svg-label">H0 True</text>
+            <text x="510" y="56" text-anchor="middle" class="svg-text svg-label">H0 False</text>
+            <!-- Row headers -->
+            <text x="160" y="106" text-anchor="middle" class="svg-text svg-label">Reject H0</text>
+            <text x="160" y="196" text-anchor="middle" class="svg-text svg-label">Fail to Reject H0</text>
+            <!-- Grid lines -->
+            <line x1="240" y1="40" x2="240" y2="240" stroke="#d4c9b8" stroke-width="1"/>
+            <line x1="440" y1="40" x2="440" y2="240" stroke="#d4c9b8" stroke-width="1"/>
+            <line x1="240" y1="70" x2="580" y2="70" stroke="#d4c9b8" stroke-width="1"/>
+            <line x1="240" y1="150" x2="580" y2="150" stroke="#d4c9b8" stroke-width="1"/>
+            <!-- Type I Error -->
+            <rect x="245" y="75" width="190" height="70" rx="4" fill="#fce4ec"/>
+            <text x="340" y="105" text-anchor="middle" class="svg-text svg-label" fill="#c62828">Type I Error</text>
+            <text x="340" y="122" text-anchor="middle" class="svg-text svg-small" fill="#c62828">(False Positive)</text>
+            <text x="340" y="138" text-anchor="middle" class="svg-text svg-small" fill="#c62828">Probability = &alpha;</text>
+            <!-- Correct: True Positive -->
+            <rect x="445" y="75" width="130" height="70" rx="4" fill="#e8f5e9"/>
+            <text x="510" y="105" text-anchor="middle" class="svg-text svg-label" fill="#2e7d32">Correct</text>
+            <text x="510" y="122" text-anchor="middle" class="svg-text svg-small" fill="#2e7d32">(True Positive)</text>
+            <text x="510" y="138" text-anchor="middle" class="svg-text svg-small" fill="#2e7d32">Power = 1-&beta;</text>
+            <!-- Correct: True Negative -->
+            <rect x="245" y="155" width="190" height="70" rx="4" fill="#e8f5e9"/>
+            <text x="340" y="185" text-anchor="middle" class="svg-text svg-label" fill="#2e7d32">Correct</text>
+            <text x="340" y="202" text-anchor="middle" class="svg-text svg-small" fill="#2e7d32">(True Negative)</text>
+            <text x="340" y="218" text-anchor="middle" class="svg-text svg-small" fill="#2e7d32">Prob = 1-&alpha;</text>
+            <!-- Type II Error -->
+            <rect x="445" y="155" width="130" height="70" rx="4" fill="#fff8e1"/>
+            <text x="510" y="185" text-anchor="middle" class="svg-text svg-label" fill="#f57f17">Type II Error</text>
+            <text x="510" y="202" text-anchor="middle" class="svg-text svg-small" fill="#f57f17">(False Negative)</text>
+            <text x="510" y="218" text-anchor="middle" class="svg-text svg-small" fill="#f57f17">Probability = &beta;</text>
+            <!-- Legend -->
+            <text x="20" y="264" class="svg-text svg-small" fill="#6b5e4a">&alpha; = significance level (typically 0.05) | &beta; = probability of Type II error | Power = 1 - &beta; (typically 0.80)</text>
+          </svg>
+        </div>
+        <div class="two-col">
+          <div class="card">
+            <div class="card-header" style="background:#fce4ec;color:#c62828" data-en="TYPE I ERROR (&alpha;)" data-zh="I类错误 (&alpha;)">TYPE I ERROR (&alpha;)</div>
+            <div class="card-body" style="font-size:12px;line-height:1.7;color:var(--text-muted)">
+              <p data-en="Rejecting a true null hypothesis (false positive). Concluding there is an effect when there isn't one." data-zh="拒绝真实的零假设（假阳性）。当没有效应时得出有效应的结论。">Rejecting a true null hypothesis (false positive). Concluding there is an effect when there isn't one.</p>
+              <p style="margin-top:8px" data-en="Controlled by setting significance level (&alpha;, typically 0.05). With multiple comparisons, use Bonferroni correction: &alpha;/k or FDR methods." data-zh="通过设置显著性水平（&alpha;，通常0.05）来控制。多重比较时，使用Bonferroni校正：&alpha;/k或FDR方法。">Controlled by setting significance level (&alpha;, typically 0.05). With multiple comparisons, use Bonferroni correction: &alpha;/k or FDR methods.</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header" style="background:#fff8e1;color:#f57f17" data-en="TYPE II ERROR (&beta;)" data-zh="II类错误 (&beta;)">TYPE II ERROR (&beta;)</div>
+            <div class="card-body" style="font-size:12px;line-height:1.7;color:var(--text-muted)">
+              <p data-en="Failing to reject a false null hypothesis (false negative). Missing a real effect." data-zh="未能拒绝虚假的零假设（假阴性）。遗漏了真实效应。">Failing to reject a false null hypothesis (false negative). Missing a real effect.</p>
+              <p style="margin-top:8px" data-en="Controlled by increasing sample size, using a larger &alpha;, or targeting a larger effect size. Power (1-&beta;) should be at least 0.80 (80%)." data-zh="通过增加样本量、使用更大的&alpha;或针对更大的效应量来控制。功效（1-&beta;）应至少为0.80（80%）。">Controlled by increasing sample size, using a larger &alpha;, or targeting a larger effect size. Power (1-&beta;) should be at least 0.80 (80%).</p>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <div class="card-header" data-en="THE POWER EQUATION: KEY RELATIONSHIPS" data-zh="功效方程：关键关系">THE POWER EQUATION: KEY RELATIONSHIPS</div>
+          <div class="card-body">
+            <div class="three-col">
+              <div style="font-size:12px;line-height:1.7;color:var(--text-muted);text-align:center">
+                <div style="font-size:24px;margin-bottom:4px">&#8593; n</div>
+                <strong data-en="Larger sample" data-zh="更大样本">Larger sample</strong><br>
+                <span data-en="= More power" data-zh="= 更大功效">= More power</span>
+              </div>
+              <div style="font-size:12px;line-height:1.7;color:var(--text-muted);text-align:center">
+                <div style="font-size:24px;margin-bottom:4px">&#8593; &delta;</div>
+                <strong data-en="Larger effect" data-zh="更大效应">Larger effect</strong><br>
+                <span data-en="= More power" data-zh="= 更大功效">= More power</span>
+              </div>
+              <div style="font-size:12px;line-height:1.7;color:var(--text-muted);text-align:center">
+                <div style="font-size:24px;margin-bottom:4px">&#8593; &alpha;</div>
+                <strong data-en="Larger alpha" data-zh="更大alpha">Larger alpha</strong><br>
+                <span data-en="= More power (but more Type I error)" data-zh="= 更大功效（但更多I类错误）">= More power (but more Type I error)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<footer>
+  <div data-en="Author: Dr. Nana Liu, PhD &mdash; Erasmus MC" data-zh="作者: 刘娜博士 &mdash; Erasmus MC">Author: Dr. Nana Liu, PhD &mdash; Erasmus MC</div>
+  <div data-en="For research planning and educational purposes. Not a substitute for biostatistical consultation." data-zh="仅供研究规划和教育目的。不能替代生物统计学咨询。">For research planning and educational purposes. Not a substitute for biostatistical consultation.</div>
+  <div style="margin-top:4px"><a href="../sample-size-calculator/index.html" data-en="Sample Size Calculator" data-zh="样本量计算器">Sample Size Calculator</a></div>
+</footer>
+
+<script>
+// ==========================================
+// Language system
+// ==========================================
+let currentLang = 'en';
+
+function setLang(lang) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.textContent.trim() === (lang === 'en' ? 'EN' : '中文')));
+  document.querySelectorAll('[data-' + lang + ']').forEach(el => {
+    const val = el.getAttribute('data-' + lang);
+    if (val) {
+      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') return;
+      if (el.tagName === 'OPTION') { el.textContent = val; return; }
+      // preserve child elements for links
+      if (el.querySelector('a') && !el.matches('a')) {
+        el.innerHTML = val;
+      } else {
+        el.innerHTML = val;
+      }
+    }
+  });
+  // Re-render dynamic content
+  if (currentReportSub) showReportSub(currentReportSub);
+  updateBiasSummaries();
+}
+
+function t(en, zh) { return currentLang === 'zh' ? zh : en; }
+
+// ==========================================
+// Tab navigation
+// ==========================================
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ==========================================
+// Decision Tree (Tab 1)
+// ==========================================
+const dtState = { q1: null, q2: null, q3: null, q3b: null, q4: null };
+
+const designData = {
+  'descriptive': {
+    name: 'Descriptive Study', zh: '描述性研究',
+    chars: ['No comparison group','Measures frequency, prevalence, or incidence','Generates hypotheses for future studies','Can be cross-sectional (survey) or longitudinal (surveillance)'],
+    chars_zh: ['无对照组','测量频率、患病率或发病率','为未来研究生成假设','可以是横断面（调查）或纵向（监测）'],
+    strengths: ['Quick and inexpensive','Good for rare diseases','Hypothesis-generating','Useful for public health planning'],
+    strengths_zh: ['快速且经济','适合罕见疾病','可生成假设','适用于公共卫生规划'],
+    limitations: ['Cannot establish causation','No comparison group','Susceptible to selection bias','Cannot control for confounding'],
+    limitations_zh: ['无法建立因果关系','无对照组','易受选择偏倚影响','无法控制混杂因素'],
+    when_use: ['Describing disease burden in a population','Investigating a new or emerging condition','Public health surveillance','Planning a larger analytical study'],
+    when_use_zh: ['描述人群中的疾病负担','调查新发或新出现的状况','公共卫生监测','规划更大的分析性研究'],
+    when_not: ['Testing a specific hypothesis','Evaluating treatment effects','Establishing causal relationships'],
+    when_not_zh: ['检验特定假设','评估治疗效果','建立因果关系'],
+    pico: 'P: [Population] | I: N/A (no intervention) | C: N/A (no comparator) | O: [Frequency/distribution measure]',
+    pico_zh: 'P: [人群] | I: 不适用（无干预） | C: 不适用（无对照） | O: [频率/分布测量]',
+    calc_link: 'Descriptive survey sample size'
+  },
+  'case-control': {
+    name: 'Case-Control Study', zh: '病例对照研究',
+    chars: ['Retrospective: starts from outcome','Cases (with disease) vs controls (without)','Measures exposure history','Uses Odds Ratio as measure of association'],
+    chars_zh: ['回顾性：从结局出发','病例（有疾病）vs 对照（无疾病）','测量暴露史','使用比值比作为关联测量'],
+    strengths: ['Efficient for rare diseases','Relatively quick and inexpensive','Can study multiple exposures','Small sample size required'],
+    strengths_zh: ['对罕见疾病效率高','相对快速且经济','可研究多种暴露','所需样本量小'],
+    limitations: ['Cannot calculate incidence or prevalence','Recall bias (retrospective exposure)','Selection bias in control selection','Temporal ambiguity possible','Only Odds Ratio (not RR directly)'],
+    limitations_zh: ['无法计算发病率或患病率','回忆偏倚（回顾性暴露）','对照选择中的选择偏倚','可能存在时间模糊性','仅能计算比值比（不能直接计算RR）'],
+    when_use: ['Rare disease or outcome','Long latency period','Multiple exposures of interest','Limited budget or time'],
+    when_use_zh: ['罕见疾病或结局','长潜伏期','多个感兴趣的暴露','预算或时间有限'],
+    when_not: ['Rare exposures','When incidence rate is needed','Conditions requiring precise temporal data'],
+    when_not_zh: ['罕见暴露','需要发病率时','需要精确时间数据的情况'],
+    pico: 'P: [Cases with condition] vs [matched controls] | I/E: [Exposure of interest] | C: [Unexposed] | O: [Odds of exposure]',
+    pico_zh: 'P: [有疾病的病例] vs [匹配的对照] | I/E: [感兴趣的暴露] | C: [未暴露] | O: [暴露的比值]',
+    calc_link: 'Case-control sample size'
+  },
+  'cohort': {
+    name: 'Cohort Study', zh: '队列研究',
+    chars: ['Prospective or retrospective','Follows exposed and unexposed groups','Measures incidence of outcome over time','Uses Risk Ratio, Rate Ratio, or Hazard Ratio'],
+    chars_zh: ['前瞻性或回顾性','随访暴露组和未暴露组','随时间测量结局的发病率','使用风险比、率比或风险比'],
+    strengths: ['Can establish temporal sequence','Can calculate incidence','Can study multiple outcomes','Less recall bias (if prospective)','Can measure dose-response'],
+    strengths_zh: ['可建立时间顺序','可计算发病率','可研究多种结局','较少回忆偏倚（如前瞻性）','可测量剂量-反应关系'],
+    limitations: ['Expensive and time-consuming','Loss to follow-up','Not efficient for rare outcomes','Confounding by unmeasured variables'],
+    limitations_zh: ['昂贵且耗时','失访','对罕见结局效率低','未测量变量的混杂'],
+    when_use: ['Rare exposures','Need for incidence data','Multiple outcomes of interest','Temporal relationship important'],
+    when_use_zh: ['罕见暴露','需要发病率数据','多个感兴趣的结局','时间关系重要'],
+    when_not: ['Rare outcomes (use case-control)','Limited budget/time','Very long latency period'],
+    when_not_zh: ['罕见结局（使用病例对照）','预算/时间有限','非常长的潜伏期'],
+    pico: 'P: [Defined population at risk] | I/E: [Exposure] | C: [Unexposed / less exposed] | O: [Incident outcome, measured as RR/HR]',
+    pico_zh: 'P: [定义的高危人群] | I/E: [暴露] | C: [未暴露/少暴露] | O: [发病结局，以RR/HR测量]',
+    calc_link: 'Cohort sample size'
+  },
+  'cross-sectional': {
+    name: 'Cross-Sectional Analytical Study', zh: '横断面分析研究',
+    chars: ['Snapshot at a single point in time','Measures exposure and outcome simultaneously','Uses Prevalence Ratio or Prevalence Odds Ratio','Can be analytical (test associations)'],
+    chars_zh: ['在单一时间点的快照','同时测量暴露和结局','使用患病率比或患病率比值比','可以是分析性的（检验关联）'],
+    strengths: ['Quick and inexpensive','Good for estimating prevalence','Can study multiple exposures and outcomes','No loss to follow-up'],
+    strengths_zh: ['快速且经济','适合估计患病率','可研究多种暴露和结局','无失访'],
+    limitations: ['Cannot establish temporal sequence','Cannot calculate incidence','Survival bias','Not suitable for rare diseases','Chicken-or-egg problem'],
+    limitations_zh: ['无法建立时间顺序','无法计算发病率','生存偏倚','不适合罕见疾病','先有鸡还是先有蛋的问题'],
+    when_use: ['Prevalence estimation','Health needs assessment','Exploring multiple associations','Hypothesis generation'],
+    when_use_zh: ['患病率估计','健康需求评估','探索多种关联','假设生成'],
+    when_not: ['Establishing causality','Rare conditions','Need for incidence data'],
+    when_not_zh: ['建立因果关系','罕见疾病','需要发病率数据'],
+    pico: 'P: [Defined population] | I/E: [Exposure measured at same time] | C: [Unexposed] | O: [Prevalent outcome]',
+    pico_zh: 'P: [定义的人群] | I/E: [同时测量的暴露] | C: [未暴露] | O: [现有结局]',
+    calc_link: 'Cross-sectional sample size'
+  },
+  'rct-parallel': {
+    name: 'Parallel-Group RCT', zh: '平行组随机对照试验',
+    chars: ['Individual randomization','Each participant in one group only','Gold standard for intervention evaluation','Supports superiority, non-inferiority, and equivalence testing'],
+    chars_zh: ['个体随机化','每位参与者仅在一个组中','干预评估的金标准','支持优效性、非劣效性和等效性检验'],
+    strengths: ['Highest level of evidence','Randomization controls confounding','Blinding reduces bias','Establishes causation'],
+    strengths_zh: ['最高级别的证据','随机化控制混杂','盲法减少偏倚','建立因果关系'],
+    limitations: ['Expensive and time-consuming','Ethical constraints','Generalizability concerns','Requires large sample for small effects','Volunteer bias'],
+    limitations_zh: ['昂贵且耗时','伦理约束','普适性问题','小效应需要大样本','志愿者偏倚'],
+    when_use: ['Testing a new treatment','Regulatory approval','Definitive efficacy evaluation','When randomization is ethical and feasible'],
+    when_use_zh: ['测试新治疗','监管批准','确定性疗效评估','当随机化符合伦理且可行时'],
+    when_not: ['Rare disease (too few patients)','Ethical impossibility to randomize','Early-phase research'],
+    when_not_zh: ['罕见疾病（患者太少）','伦理上不可能随机化','早期研究'],
+    pico: 'P: [Eligible patients] | I: [New intervention] | C: [Control/placebo/standard care] | O: [Primary efficacy outcome]',
+    pico_zh: 'P: [符合条件的患者] | I: [新干预] | C: [对照/安慰剂/标准治疗] | O: [主要疗效结局]',
+    calc_link: 'Two-group comparison'
+  },
+  'rct-crossover': {
+    name: 'Crossover RCT', zh: '交叉RCT',
+    chars: ['Each participant receives all treatments','Washout period between treatments','Each participant serves as own control','Randomization determines sequence order'],
+    chars_zh: ['每位参与者接受所有治疗','治疗间有洗脱期','每位参与者作为自身对照','随机化决定顺序'],
+    strengths: ['Requires fewer participants','Controls for between-subject variability','Each patient is own control','More powerful per subject'],
+    strengths_zh: ['需要更少参与者','控制受试者间变异','每位患者是自身对照','每位受试者功效更强'],
+    limitations: ['Carryover effects','Requires stable chronic conditions','Longer study duration','Period effects possible','Higher dropout risk'],
+    limitations_zh: ['残余效应','需要稳定的慢性疾病','研究持续时间更长','可能有周期效应','更高的退出风险'],
+    when_use: ['Chronic stable conditions','Short-acting treatments','Symptom relief outcomes','Bioequivalence studies'],
+    when_use_zh: ['慢性稳定疾病','短效治疗','症状缓解结局','生物等效性研究'],
+    when_not: ['Curative treatments','Conditions that resolve','Treatments with long half-life','Acute conditions'],
+    when_not_zh: ['治愈性治疗','会自行消退的疾病','半衰期长的治疗','急性疾病'],
+    pico: 'P: [Chronic stable patients] | I: [Treatment A then B] | C: [Treatment B then A] | O: [Within-subject outcome difference]',
+    pico_zh: 'P: [慢性稳定患者] | I: [先A后B治疗] | C: [先B后A治疗] | O: [受试者内结局差异]',
+    calc_link: 'Crossover trial sample size'
+  },
+  'rct-factorial': {
+    name: 'Factorial RCT', zh: '析因RCT',
+    chars: ['Tests 2+ interventions simultaneously','All possible combinations of treatments','Can detect interaction effects','2x2 factorial is most common'],
+    chars_zh: ['同时检验2+干预','所有可能的治疗组合','可检测交互效应','2x2析因最常见'],
+    strengths: ['Tests multiple interventions efficiently','Can detect interactions','Same sample size as single-factor trial (if no interaction)','Cost-effective'],
+    strengths_zh: ['高效检验多种干预','可检测交互作用','与单因素试验相同样本量（无交互时）','成本效益好'],
+    limitations: ['Complex design and analysis','Interaction effects complicate interpretation','Larger sample needed if interactions expected','Complex treatment combinations'],
+    limitations_zh: ['设计和分析复杂','交互效应使解释复杂化','如预期有交互需更大样本','复杂的治疗组合'],
+    when_use: ['Two independent interventions to test','Screening multiple treatments','Expected additive (no interaction) effects','Public health multi-component interventions'],
+    when_use_zh: ['两个独立干预需检验','筛选多种治疗','预期叠加（无交互）效应','公共卫生多组分干预'],
+    when_not: ['Strong expected interaction','Single intervention evaluation','Limited sample size'],
+    when_not_zh: ['预期强交互作用','单一干预评估','样本量有限'],
+    pico: 'P: [Eligible patients] | I: [Factor A + Factor B combinations] | C: [Placebo/no treatment] | O: [Main effects and interaction]',
+    pico_zh: 'P: [符合条件的患者] | I: [因素A + 因素B组合] | C: [安慰剂/无治疗] | O: [主效应和交互作用]',
+    calc_link: 'Factorial trial sample size'
+  },
+  'cluster-rct': {
+    name: 'Cluster Randomized Trial', zh: '整群随机试验',
+    chars: ['Randomization at cluster level (clinic, school, community)','All individuals in a cluster get same treatment','Requires adjustment for intra-cluster correlation (ICC)','Design effect inflates sample size'],
+    chars_zh: ['在群组水平随机化（诊所、学校、社区）','群组内所有个体接受相同治疗','需要调整群组内相关（ICC）','设计效应增加样本量'],
+    strengths: ['Practical for interventions delivered at group level','Reduces contamination between groups','Feasible for health system interventions','Pragmatic design'],
+    strengths_zh: ['适合在群组水平实施的干预','减少组间污染','适用于卫生系统干预','实用性设计'],
+    limitations: ['Requires more participants (design effect)','Fewer units of randomization','Imbalance between clusters','Complex analysis required','ICC must be estimated'],
+    limitations_zh: ['需要更多参与者（设计效应）','随机化单位较少','群组间不平衡','需要复杂分析','必须估计ICC'],
+    when_use: ['Intervention at group level','Risk of contamination in individual RCT','Health system or policy intervention','Community-based intervention'],
+    when_use_zh: ['群组水平干预','个体RCT有污染风险','卫生系统或政策干预','社区干预'],
+    when_not: ['Individual-level intervention feasible','Small number of clusters available','High ICC expected with few clusters'],
+    when_not_zh: ['个体水平干预可行','可用群组数量少','预期高ICC但群组少'],
+    pico: 'P: [Clusters of individuals] | I: [Cluster-level intervention] | C: [Control clusters] | O: [Individual or cluster-level outcome, adjusted for clustering]',
+    pico_zh: 'P: [个体群组] | I: [群组水平干预] | C: [对照群组] | O: [个体或群组水平结局，调整聚类]',
+    calc_link: 'Cluster RCT sample size'
+  },
+  'quasi': {
+    name: 'Quasi-Experimental Study', zh: '准实验研究',
+    chars: ['No randomization','Comparison through natural groups or before-after','Includes interrupted time series, difference-in-differences, regression discontinuity','Non-equivalent control group common'],
+    chars_zh: ['无随机化','通过自然分组或前后比较','包括间断时间序列、双重差分、回归不连续性','非等价对照组常见'],
+    strengths: ['Feasible when randomization is not possible','More ethical in some contexts','Real-world applicability','Useful for policy evaluation'],
+    strengths_zh: ['在无法随机化时可行','在某些情况下更符合伦理','现实世界适用性','适用于政策评估'],
+    limitations: ['Cannot fully control confounding','Selection bias likely','Internal validity weaker than RCT','Difficult to establish causation'],
+    limitations_zh: ['无法完全控制混杂','可能有选择偏倚','内部效度弱于RCT','难以建立因果关系'],
+    when_use: ['Randomization unethical or impractical','Policy or system-level evaluation','Natural experiment opportunity','Before-after comparison of a program'],
+    when_use_zh: ['随机化不符合伦理或不切实际','政策或系统水平评估','自然实验机会','项目的前后比较'],
+    when_not: ['When RCT is feasible','Need for strongest causal evidence','Regulatory approval pathway'],
+    when_not_zh: ['当RCT可行时','需要最强因果证据','监管审批途径'],
+    pico: 'P: [Exposed/intervention group] | I: [Non-randomized intervention] | C: [Non-equivalent control] | O: [Outcome with quasi-experimental analysis]',
+    pico_zh: 'P: [暴露/干预组] | I: [非随机干预] | C: [非等价对照] | O: [准实验分析的结局]',
+    calc_link: 'Before-after / quasi-experimental sample size'
+  }
+};
+
+function dtSelect(step, value) {
+  // Mark selected
+  const qEl = document.getElementById(step === '3b' ? 'dt-q3b' : 'dt-q' + step);
+  qEl.querySelectorAll('.dt-option').forEach(o => o.classList.remove('selected'));
+  event.target.closest('.dt-option').classList.add('selected');
+
+  dtState['q' + step] = value;
+
+  // Hide subsequent questions
+  ['dt-q2','dt-q3','dt-q3b','dt-q4'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  document.getElementById('dt-result').style.display = 'none';
+
+  if (step === 1) {
+    dtState.q2 = dtState.q3 = dtState.q3b = dtState.q4 = null;
+    if (value === 'descriptive') {
+      showDesignResult('descriptive');
+    } else if (value === 'analytical') {
+      document.getElementById('dt-q2').style.display = 'block';
+    } else if (value === 'experimental') {
+      document.getElementById('dt-q3').style.display = 'block';
+    }
+  } else if (step === 2) {
+    dtState.q3 = dtState.q3b = dtState.q4 = null;
+    showDesignResult(value);
+  } else if (step === 3) {
+    dtState.q3b = dtState.q4 = null;
+    if (value === 'rct') {
+      document.getElementById('dt-q3b').style.display = 'block';
+    } else if (value === 'cluster-rct') {
+      document.getElementById('dt-q4').style.display = 'block';
+      dtState.design = 'cluster-rct';
+    } else if (value === 'quasi') {
+      showDesignResult('quasi');
+    }
+  } else if (step === '3b') {
+    dtState.q4 = null;
+    document.getElementById('dt-q4').style.display = 'block';
+    dtState.design = 'rct-' + value;
+  } else if (step === 4) {
+    const base = dtState.design || (dtState.q3 === 'cluster-rct' ? 'cluster-rct' : dtState.q2);
+    showDesignResult(base, value !== 'none' ? value : null);
+  }
+}
+
+function showDesignResult(designKey, feature) {
+  const d = designData[designKey];
+  if (!d) return;
+  const isZh = currentLang === 'zh';
+  const chars = isZh ? d.chars_zh : d.chars;
+  const strengths = isZh ? d.strengths_zh : d.strengths;
+  const limitations = isZh ? d.limitations_zh : d.limitations;
+  const whenUse = isZh ? d.when_use_zh : d.when_use;
+  const whenNot = isZh ? d.when_not_zh : d.when_not;
+  const pico = isZh ? d.pico_zh : d.pico;
+
+  let featureHtml = '';
+  if (feature) {
+    const featureNames = {
+      'superiority': { en: 'Superiority Design', zh: '优效性设计', desc_en: 'The trial aims to demonstrate that the intervention is statistically superior to the comparator. Uses a one-sided or two-sided test with the null hypothesis that there is no difference.', desc_zh: '试验旨在证明干预在统计学上优于对照。使用单侧或双侧检验，零假设为无差异。' },
+      'non-inferiority': { en: 'Non-Inferiority Design', zh: '非劣效性设计', desc_en: 'The trial aims to demonstrate that the intervention is not worse than the comparator by more than a pre-specified non-inferiority margin (delta). Requires careful margin justification based on prior evidence.', desc_zh: '试验旨在证明干预不会比对照差超过预先指定的非劣效性界值（delta）。需要基于先前证据仔细论证界值。' },
+      'equivalence': { en: 'Equivalence Design', zh: '等效性设计', desc_en: 'The trial aims to demonstrate that two treatments have equivalent effects within a pre-specified equivalence margin. Uses two one-sided tests (TOST procedure).', desc_zh: '试验旨在证明两种治疗在预先指定的等效界值内具有等效效果。使用两个单侧检验（TOST程序）。' },
+      'adaptive': { en: 'Adaptive Design', zh: '适应性设计', desc_en: 'Pre-planned modifications to the trial based on interim analyses (sample size re-estimation, dose modification, treatment arm dropping). Requires careful statistical control of Type I error.', desc_zh: '基于中期分析的预先计划的试验修改（样本量重估、剂量修改、治疗臂删除）。需要仔细控制I类错误的统计控制。' }
+    };
+    const f = featureNames[feature];
+    if (f) {
+      featureHtml = `<div class="result-section"><h4>${isZh ? '额外设计特征' : 'ADDITIONAL DESIGN FEATURE'}</h4><p style="font-size:12px;color:var(--text-muted);line-height:1.7"><strong>${isZh ? f.zh : f.en}:</strong> ${isZh ? f.desc_zh : f.desc_en}</p></div>`;
+    }
+  }
+
+  const el = document.getElementById('dt-result');
+  el.style.display = 'block';
+  el.innerHTML = `
+    <div class="result-card">
+      <div class="result-card-header">
+        <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;opacity:0.7;margin-bottom:4px">${isZh ? '推荐设计' : 'RECOMMENDED DESIGN'}</div>
+        <h3>${d.name}</h3>
+        <div class="result-zh">${d.zh}</div>
+      </div>
+      <div class="result-card-body">
+        <div class="result-section"><h4>${isZh ? '主要特征' : 'KEY CHARACTERISTICS'}</h4><ul>${chars.map(c => '<li>' + c + '</li>').join('')}</ul></div>
+        <div class="two-col">
+          <div class="result-section strength"><h4>${isZh ? '优势' : 'STRENGTHS'}</h4><ul>${strengths.map(s => '<li>' + s + '</li>').join('')}</ul></div>
+          <div class="result-section limitation"><h4>${isZh ? '局限性' : 'LIMITATIONS'}</h4><ul>${limitations.map(l => '<li>' + l + '</li>').join('')}</ul></div>
+        </div>
+        <div class="two-col">
+          <div class="result-section"><h4>${isZh ? '何时使用' : 'WHEN TO USE'}</h4><ul>${whenUse.map(w => '<li>' + w + '</li>').join('')}</ul></div>
+          <div class="result-section limitation"><h4>${isZh ? '何时不用' : 'WHEN NOT TO USE'}</h4><ul>${whenNot.map(w => '<li>' + w + '</li>').join('')}</ul></div>
+        </div>
+        ${featureHtml}
+        <div class="result-section"><h4>${isZh ? 'PICO框架模板' : 'PICO FRAMEWORK TEMPLATE'}</h4><div class="output-box" style="margin-top:0"><code>${pico}</code></div></div>
+        <div style="margin-top:16px;text-align:center"><a href="../sample-size-calculator/index.html" class="btn btn-primary" style="text-decoration:none">${isZh ? '前往样本量计算器' : 'Go to Sample Size Calculator'} &rarr;</a></div>
+      </div>
+    </div>`;
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function dtReset() {
+  Object.keys(dtState).forEach(k => dtState[k] = null);
+  ['dt-q2','dt-q3','dt-q3b','dt-q4'].forEach(id => { const e = document.getElementById(id); if (e) e.style.display = 'none'; });
+  document.getElementById('dt-result').style.display = 'none';
+  document.querySelectorAll('.dt-option').forEach(o => o.classList.remove('selected'));
+}
+
+// ==========================================
+// PICO Builder (Tab 2)
+// ==========================================
+function generatePICO() {
+  const condition = document.getElementById('pico-condition').value || '[condition]';
+  const age = document.getElementById('pico-age').value || '[age range]';
+  const setting = document.getElementById('pico-setting').value || '[setting]';
+  const inclusion = document.getElementById('pico-inclusion').value || '';
+  const exclusion = document.getElementById('pico-exclusion').value || '';
+  const intervention = document.getElementById('pico-intervention').value || '[intervention]';
+  const dosage = document.getElementById('pico-dosage').value || '';
+  const duration = document.getElementById('pico-duration').value || '';
+  const compType = document.getElementById('pico-comp-type').value;
+  const comparator = document.getElementById('pico-comparator').value || compType;
+  const primary = document.getElementById('pico-primary').value || '[primary outcome]';
+  const secondary = document.getElementById('pico-secondary').value || '';
+  const outcomeType = document.getElementById('pico-outcome-type').value;
+
+  const isZh = currentLang === 'zh';
+
+  // Build research question
+  let rq;
+  if (isZh) {
+    rq = `在${condition}的${age}患者（于${setting}就诊）中，与${comparator}相比，${intervention}${duration ? '使用' + duration : ''}在${primary}方面是否更有效？`;
+  } else {
+    rq = `In ${age} patients with ${condition} (in ${setting}), is ${intervention}${duration ? ' for ' + duration : ''} more effective than ${comparator} in improving ${primary}?`;
+  }
+
+  // Suggested design
+  let design;
+  if (isZh) {
+    design = compType === 'none' ? '前瞻性队列研究' : '随机对照试验（平行组）';
+  } else {
+    design = compType === 'none' ? 'Prospective Cohort Study' : 'Randomized Controlled Trial (Parallel Group)';
+  }
+
+  // ClinicalTrials.gov query
+  const ctQuery = `${condition} AND ${intervention}`.replace(/\s+/g, '+');
+
+  // MeSH terms
+  const meshTerms = [condition, intervention, comparator !== compType ? comparator : ''].filter(Boolean);
+
+  const el = document.getElementById('pico-output');
+  el.style.display = 'block';
+  el.innerHTML = `
+    <div class="output-box" style="margin-top:20px">
+      <h4>${isZh ? '结构化研究问题' : 'STRUCTURED RESEARCH QUESTION'}</h4>
+      <p style="font-size:14px;line-height:1.8;font-style:italic">"${rq}"</p>
+    </div>
+    <div class="two-col" style="margin-top:16px">
+      <div class="card">
+        <div class="card-header">${isZh ? '建议研究设计' : 'SUGGESTED STUDY DESIGN'}</div>
+        <div class="card-body">
+          <p style="font-size:14px;font-weight:500;color:var(--accent)">${design}</p>
+          <p style="font-size:11px;color:var(--text-muted);margin-top:4px">${isZh ? '结局类型：' : 'Outcome type: '}${outcomeType}</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">${isZh ? '搜索查询' : 'SEARCH QUERIES'}</div>
+        <div class="card-body">
+          <p style="font-size:11px;color:var(--text-muted);margin-bottom:6px">ClinicalTrials.gov:</p>
+          <p style="font-size:12px"><a href="https://clinicaltrials.gov/search?term=${encodeURIComponent(ctQuery)}" target="_blank" style="color:var(--accent)">${ctQuery}</a></p>
+          <p style="font-size:11px;color:var(--text-muted);margin-top:10px;margin-bottom:6px">${isZh ? '建议MeSH术语：' : 'Suggested MeSH terms:'}</p>
+          <p style="font-size:12px">${meshTerms.map(m => '<span class="tag tag-green" style="margin-right:6px">' + m + '</span>').join('')}</p>
+        </div>
+      </div>
+    </div>`;
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ==========================================
+// Bias Assessment (Tab 3)
+// ==========================================
+const biasData = {
+  rob2: [
+    { id: 'rob2-d1', en: 'Domain 1: Randomization process', zh: '领域1：随机化过程', desc_en: 'Was the allocation sequence random? Was the allocation sequence concealed until participants were enrolled? Did baseline differences suggest a problem with randomization?', desc_zh: '分配序列是否随机？分配序列是否在参与者入组前被隐藏？基线差异是否提示随机化存在问题？' },
+    { id: 'rob2-d2', en: 'Domain 2: Deviations from intended interventions', zh: '领域2：偏离预期干预', desc_en: 'Were participants aware of their assigned intervention? Were carers/people delivering the intervention aware of the assignment? Were there deviations due to the trial context?', desc_zh: '参与者是否知道其分配的干预？护理者/干预实施者是否知道分配？是否存在由于试验环境导致的偏离？' },
+    { id: 'rob2-d3', en: 'Domain 3: Missing outcome data', zh: '领域3：缺失的结局数据', desc_en: 'Were outcome data available for all or nearly all participants? Is there evidence that the result was not biased by missing data? Could missingness depend on the true value of the outcome?', desc_zh: '是否所有或几乎所有参与者都有结局数据？是否有证据表明结果未受缺失数据偏倚？缺失是否可能取决于结局的真实值？' },
+    { id: 'rob2-d4', en: 'Domain 4: Measurement of the outcome', zh: '领域4：结局的测量', desc_en: 'Was the method of measuring the outcome appropriate? Could measurement differ between groups? Were outcome assessors aware of the intervention?', desc_zh: '测量结局的方法是否适当？组间测量是否可能不同？结局评估者是否知道干预分配？' },
+    { id: 'rob2-d5', en: 'Domain 5: Selection of the reported result', zh: '领域5：报告结果的选择', desc_en: 'Were the data that produced this result analyzed in accordance with a pre-specified plan? Is the result likely to have been selected from multiple outcome measurements or analyses?', desc_zh: '产生此结果的数据是否按照预先指定的计划进行分析？结果是否可能从多个结局测量或分析中选择？' }
+  ],
+  nos: [
+    { id: 'nos-s1', en: 'Selection: Representativeness of exposed cohort', zh: '选择：暴露队列的代表性', desc_en: 'Is the exposed cohort truly or somewhat representative of the average population?', desc_zh: '暴露队列是否真正或在一定程度上代表一般人群？', star: true },
+    { id: 'nos-s2', en: 'Selection: Selection of non-exposed cohort', zh: '选择：非暴露队列的选择', desc_en: 'Was the non-exposed cohort drawn from the same community as the exposed cohort?', desc_zh: '非暴露队列是否来自与暴露队列相同的社区？', star: true },
+    { id: 'nos-s3', en: 'Selection: Ascertainment of exposure', zh: '选择：暴露的确认', desc_en: 'Was exposure ascertained by secure record or structured interview?', desc_zh: '暴露是否通过安全记录或结构化访谈确认？', star: true },
+    { id: 'nos-s4', en: 'Selection: Outcome not present at start', zh: '选择：开始时结局不存在', desc_en: 'Was it demonstrated that the outcome of interest was not present at start of the study?', desc_zh: '是否证明研究开始时感兴趣的结局不存在？', star: true },
+    { id: 'nos-c1', en: 'Comparability: Control for most important factor', zh: '可比性：控制最重要因素', desc_en: 'Was the study controlled for the most important confounding factor?', desc_zh: '研究是否控制了最重要的混杂因素？', star: true },
+    { id: 'nos-c2', en: 'Comparability: Control for additional factor', zh: '可比性：控制额外因素', desc_en: 'Was the study controlled for any additional confounding factor?', desc_zh: '研究是否控制了任何额外的混杂因素？', star: true },
+    { id: 'nos-o1', en: 'Outcome: Assessment of outcome', zh: '结局：结局评估', desc_en: 'Was the outcome assessed by independent blind assessment or record linkage?', desc_zh: '结局是否通过独立盲法评估或记录连接评估？', star: true },
+    { id: 'nos-o2', en: 'Outcome: Follow-up length', zh: '结局：随访时间', desc_en: 'Was follow-up long enough for outcomes to occur?', desc_zh: '随访时间是否足够长以使结局发生？', star: true },
+    { id: 'nos-o3', en: 'Outcome: Adequacy of follow-up', zh: '结局：随访充分性', desc_en: 'Was the follow-up rate adequate (complete or subjects lost unlikely to introduce bias)?', desc_zh: '随访率是否充分（完整或失访不太可能引入偏倚）？', star: true }
+  ],
+  quadas: [
+    { id: 'qu-d1', en: 'Domain 1: Patient Selection', zh: '领域1：患者选择', desc_en: 'Was a consecutive or random sample enrolled? Was a case-control design avoided? Did the study avoid inappropriate exclusions?', desc_zh: '是否纳入连续或随机样本？是否避免病例对照设计？研究是否避免不当排除？', applicability: true },
+    { id: 'qu-d2', en: 'Domain 2: Index Test', zh: '领域2：指标测试', desc_en: 'Were the index test results interpreted without knowledge of the reference standard results? Was a pre-specified threshold used?', desc_zh: '指标测试结果的解释是否不知道参考标准结果？是否使用预先指定的阈值？', applicability: true },
+    { id: 'qu-d3', en: 'Domain 3: Reference Standard', zh: '领域3：参考标准', desc_en: 'Is the reference standard likely to correctly classify the target condition? Were the reference standard results interpreted without knowledge of the index test?', desc_zh: '参考标准是否可能正确分类目标疾病？参考标准结果的解释是否不知道指标测试？', applicability: true },
+    { id: 'qu-d4', en: 'Domain 4: Flow and Timing', zh: '领域4：流程和时间', desc_en: 'Was there an appropriate interval between index test and reference standard? Did all patients receive the same reference standard? Were all patients included in the analysis?', desc_zh: '指标测试和参考标准之间的间隔是否适当？所有患者是否接受相同的参考标准？所有患者是否纳入分析？', applicability: false }
+  ]
+};
+
+function initBiasAssessment() {
+  // RoB 2
+  const rob2El = document.getElementById('rob2-domains');
+  rob2El.innerHTML = biasData.rob2.map(d => `
+    <div class="bias-domain" data-id="${d.id}">
+      <h4><span data-en="${d.en}" data-zh="${d.zh}">${currentLang === 'zh' ? d.zh : d.en}</span></h4>
+      <p><span data-en="${d.desc_en}" data-zh="${d.desc_zh}">${currentLang === 'zh' ? d.desc_zh : d.desc_en}</span></p>
+      <div class="bias-radios">
+        <label><input type="radio" name="${d.id}" value="low" onchange="updateBiasSummaries()"> <span data-en="Low" data-zh="低">Low</span></label>
+        <label><input type="radio" name="${d.id}" value="some" onchange="updateBiasSummaries()"> <span data-en="Some concerns" data-zh="一些关注">Some concerns</span></label>
+        <label><input type="radio" name="${d.id}" value="high" onchange="updateBiasSummaries()"> <span data-en="High" data-zh="高">High</span></label>
+      </div>
+      <input type="text" class="cl-notes" placeholder="${currentLang === 'zh' ? '备注...' : 'Notes...'}" style="width:100%;font-size:11px;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Mono',monospace;color:var(--text-muted)">
+    </div>`).join('');
+
+  // NOS
+  const nosEl = document.getElementById('nos-domains');
+  nosEl.innerHTML = biasData.nos.map(d => `
+    <div class="bias-domain" data-id="${d.id}">
+      <h4><span data-en="${d.en}" data-zh="${d.zh}">${currentLang === 'zh' ? d.zh : d.en}</span></h4>
+      <p><span data-en="${d.desc_en}" data-zh="${d.desc_zh}">${currentLang === 'zh' ? d.desc_zh : d.desc_en}</span></p>
+      <div class="bias-radios">
+        <label><input type="radio" name="${d.id}" value="yes" onchange="updateBiasSummaries()"> <span data-en="Yes (star)" data-zh="是（星）">Yes (star)</span></label>
+        <label><input type="radio" name="${d.id}" value="no" onchange="updateBiasSummaries()"> <span data-en="No" data-zh="否">No</span></label>
+      </div>
+      <input type="text" class="cl-notes" placeholder="${currentLang === 'zh' ? '备注...' : 'Notes...'}" style="width:100%;font-size:11px;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Mono',monospace;color:var(--text-muted)">
+    </div>`).join('');
+
+  // QUADAS-2
+  const quEl = document.getElementById('quadas-domains');
+  quEl.innerHTML = biasData.quadas.map(d => `
+    <div class="bias-domain" data-id="${d.id}">
+      <h4><span data-en="${d.en}" data-zh="${d.zh}">${currentLang === 'zh' ? d.zh : d.en}</span></h4>
+      <p><span data-en="${d.desc_en}" data-zh="${d.desc_zh}">${currentLang === 'zh' ? d.desc_zh : d.desc_en}</span></p>
+      <div class="bias-radios">
+        <label><input type="radio" name="${d.id}-rob" value="low" onchange="updateBiasSummaries()"> <span data-en="Low" data-zh="低">Low</span></label>
+        <label><input type="radio" name="${d.id}-rob" value="some" onchange="updateBiasSummaries()"> <span data-en="Unclear" data-zh="不清楚">Unclear</span></label>
+        <label><input type="radio" name="${d.id}-rob" value="high" onchange="updateBiasSummaries()"> <span data-en="High" data-zh="高">High</span></label>
+      </div>
+      ${d.applicability ? `<div class="bias-radios" style="margin-top:6px"><span style="font-size:10px;color:var(--text-muted);margin-right:8px;text-transform:uppercase;letter-spacing:0.5px" data-en="Applicability:" data-zh="适用性:">Applicability:</span>
+        <label><input type="radio" name="${d.id}-app" value="low" onchange="updateBiasSummaries()"> <span data-en="Low" data-zh="低">Low</span></label>
+        <label><input type="radio" name="${d.id}-app" value="some" onchange="updateBiasSummaries()"> <span data-en="Unclear" data-zh="不清楚">Unclear</span></label>
+        <label><input type="radio" name="${d.id}-app" value="high" onchange="updateBiasSummaries()"> <span data-en="High" data-zh="高">High</span></label>
+      </div>` : ''}
+      <input type="text" class="cl-notes" placeholder="${currentLang === 'zh' ? '备注...' : 'Notes...'}" style="margin-top:8px;width:100%;font-size:11px;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Mono',monospace;color:var(--text-muted)">
+    </div>`).join('');
+}
+
+function updateBiasSummaries() {
+  const isZh = currentLang === 'zh';
+  // RoB 2
+  const rob2Vals = biasData.rob2.map(d => {
+    const r = document.querySelector(`input[name="${d.id}"]:checked`);
+    return r ? r.value : null;
+  });
+  let rob2Overall = 'low';
+  if (rob2Vals.includes('high')) rob2Overall = 'high';
+  else if (rob2Vals.includes('some')) rob2Overall = 'some';
+
+  const rob2Labels = { low: isZh ? '低风险' : 'Low Risk', some: isZh ? '一些关注' : 'Some Concerns', high: isZh ? '高风险' : 'High Risk' };
+  document.getElementById('rob2-summary').innerHTML = `<div class="traffic-light tl-${rob2Overall}" style="font-size:14px;padding:8px 20px;">${rob2Labels[rob2Overall]}</div>`;
+
+  // Traffic light
+  const colors = { low: '#4caf50', some: '#ff9800', high: '#f44336', null: '#e0e0e0' };
+  const rob2Traffic = rob2Vals.map((v, i) => {
+    const c = colors[v] || colors[null];
+    const label = biasData.rob2[i].en.replace('Domain ', 'D');
+    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><div style="width:20px;height:20px;border-radius:50%;background:${c};flex-shrink:0"></div><span style="font-size:11px;color:var(--text-muted)">${label}</span></div>`;
+  }).join('');
+  document.getElementById('rob2-traffic').innerHTML = rob2Traffic;
+
+  // NOS
+  const nosStars = biasData.nos.reduce((acc, d) => {
+    const r = document.querySelector(`input[name="${d.id}"]:checked`);
+    return acc + (r && r.value === 'yes' ? 1 : 0);
+  }, 0);
+  document.getElementById('nos-summary').innerHTML = `<div style="font-family:'DM Serif Display',serif;font-size:36px;color:var(--accent)">${nosStars} / 9</div><div style="font-size:11px;color:var(--text-muted);margin-top:4px">${isZh ? '获得星数' : 'stars awarded'}</div>`;
+  let nosQ = nosStars >= 7 ? 'low' : nosStars >= 4 ? 'some' : 'high';
+  const nosLabels = { low: isZh ? '好' : 'Good', some: isZh ? '一般' : 'Fair', high: isZh ? '差' : 'Poor' };
+  document.getElementById('nos-quality').innerHTML = `<div class="traffic-light tl-${nosQ}" style="font-size:14px;padding:8px 20px;">${nosLabels[nosQ]}</div><div style="font-size:11px;color:var(--text-muted);margin-top:8px">${isZh ? '好: 7-9 | 一般: 4-6 | 差: 0-3' : 'Good: 7-9 | Fair: 4-6 | Poor: 0-3'}</div>`;
+
+  // QUADAS-2
+  const quVals = biasData.quadas.map(d => {
+    const r = document.querySelector(`input[name="${d.id}-rob"]:checked`);
+    return r ? r.value : null;
+  });
+  let quOverall = 'low';
+  if (quVals.includes('high')) quOverall = 'high';
+  else if (quVals.includes('some')) quOverall = 'some';
+  document.getElementById('quadas-summary').innerHTML = `<div class="traffic-light tl-${quOverall}" style="font-size:14px;padding:8px 20px;">${rob2Labels[quOverall]}</div>`;
+
+  const appVals = biasData.quadas.filter(d => d.applicability).map(d => {
+    const r = document.querySelector(`input[name="${d.id}-app"]:checked`);
+    return r ? r.value : null;
+  });
+  let appOverall = 'low';
+  if (appVals.includes('high')) appOverall = 'high';
+  else if (appVals.includes('some')) appOverall = 'some';
+  const appLabels = { low: isZh ? '低关注' : 'Low Concern', some: isZh ? '不清楚' : 'Unclear', high: isZh ? '高关注' : 'High Concern' };
+  document.getElementById('quadas-applicability').innerHTML = `<div class="traffic-light tl-${appOverall}" style="font-size:14px;padding:8px 20px;">${appLabels[appOverall]}</div>`;
+}
+
+function showBiasSub(id) {
+  document.querySelectorAll('#panel-bias .sub-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('#panel-bias .sub-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('bias-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ==========================================
+// Reporting Guidelines (Tab 4)
+// ==========================================
+let currentReportSub = 'consort';
+
+const reportingData = {
+  consort: {
+    title: 'CONSORT 2010', zh_title: 'CONSORT 2010',
+    ref: 'Schulz KF, et al. Ann Intern Med. 2010;152(11):726-732.',
+    desc_en: 'CONsolidated Standards of Reporting Trials. For randomized controlled trials.',
+    desc_zh: '试验报告统一标准。用于随机对照试验。',
+    items: [
+      {s:'Title & Abstract',s_zh:'标题和摘要',items:[
+        {n:'1a',en:'Identification as a randomised trial in the title',zh:'在标题中标识为随机试验'},
+        {n:'1b',en:'Structured summary of trial design, methods, results, and conclusions',zh:'试验设计、方法、结果和结论的结构化摘要'}
+      ]},
+      {s:'Introduction',s_zh:'引言',items:[
+        {n:'2a',en:'Scientific background and explanation of rationale',zh:'科学背景和理由解释'},
+        {n:'2b',en:'Specific objectives or hypotheses',zh:'具体目标或假设'}
+      ]},
+      {s:'Methods',s_zh:'方法',items:[
+        {n:'3a',en:'Description of trial design including allocation ratio',zh:'试验设计描述，包括分配比例'},
+        {n:'3b',en:'Important changes to methods after trial commencement with reasons',zh:'试验开始后方法的重要变更及原因'},
+        {n:'4a',en:'Eligibility criteria for participants',zh:'参与者的纳入标准'},
+        {n:'4b',en:'Settings and locations where data were collected',zh:'数据收集的场所和地点'},
+        {n:'5',en:'Interventions for each group with sufficient detail for replication',zh:'各组干预的足够详细描述以便复制'},
+        {n:'6a',en:'Completely defined pre-specified primary and secondary outcome measures',zh:'完全定义的预先指定主要和次要结局指标'},
+        {n:'6b',en:'Any changes to trial outcomes after trial commenced with reasons',zh:'试验开始后结局的任何变更及原因'},
+        {n:'7a',en:'How sample size was determined',zh:'样本量如何确定'},
+        {n:'7b',en:'When applicable, explanation of any interim analyses and stopping guidelines',zh:'如适用，中期分析和终止指南的解释'},
+        {n:'8a',en:'Method used to generate the random allocation sequence',zh:'生成随机分配序列的方法'},
+        {n:'8b',en:'Type of randomisation; details of any restriction',zh:'随机化类型；任何限制的细节'},
+        {n:'9',en:'Mechanism used to implement the random allocation sequence',zh:'实施随机分配序列的机制'},
+        {n:'10',en:'Who generated the allocation sequence, who enrolled participants, who assigned participants',zh:'谁生成分配序列，谁纳入参与者，谁分配参与者'},
+        {n:'11a',en:'If done, who was blinded after assignment and how',zh:'如果实施，分配后谁被盲法及如何实施'},
+        {n:'11b',en:'Description of the similarity of interventions if relevant',zh:'如相关，干预相似性的描述'},
+        {n:'12a',en:'Statistical methods used to compare groups for primary and secondary outcomes',zh:'用于比较组间主要和次要结局的统计方法'},
+        {n:'12b',en:'Methods for additional analyses (subgroup, adjusted)',zh:'额外分析的方法（亚组、调整）'}
+      ]},
+      {s:'Results',s_zh:'结果',items:[
+        {n:'13a',en:'For each group: numbers randomly assigned, receiving intended treatment, analysed',zh:'每组：随机分配数、接受预期治疗数、分析数'},
+        {n:'13b',en:'For each group, losses and exclusions after randomisation with reasons',zh:'每组，随机化后的失访和排除及原因'},
+        {n:'14a',en:'Dates defining the periods of recruitment and follow-up',zh:'定义招募和随访期间的日期'},
+        {n:'14b',en:'Why the trial ended or was stopped',zh:'试验为何结束或停止'},
+        {n:'15',en:'A table showing baseline demographic and clinical characteristics',zh:'显示基线人口统计学和临床特征的表格'},
+        {n:'16',en:'For each group, number of participants included in each analysis',zh:'每组，纳入每项分析的参与者数'},
+        {n:'17a',en:'For each primary and secondary outcome, results for each group with effect size and precision',zh:'每个主要和次要结局，各组结果及效应量和精度'},
+        {n:'17b',en:'For binary outcomes, presentation of both absolute and relative effect sizes',zh:'二分类结局，呈现绝对和相对效应量'}
+      ]},
+      {s:'Discussion',s_zh:'讨论',items:[
+        {n:'18',en:'All important harms or unintended effects in each group',zh:'每组所有重要的危害或非预期效果'},
+        {n:'19',en:'Trial limitations, addressing sources of potential bias and imprecision',zh:'试验局限性，涉及潜在偏倚和不精确性来源'},
+        {n:'20',en:'Generalisability (external validity) of the trial findings',zh:'试验发现的普适性（外部效度）'},
+        {n:'21',en:'Interpretation consistent with results, balancing benefits and harms',zh:'与结果一致的解释，平衡获益和危害'}
+      ]},
+      {s:'Other',s_zh:'其他',items:[
+        {n:'22',en:'Registration number and name of trial registry',zh:'注册号和试验注册中心名称'},
+        {n:'23',en:'Where the full trial protocol can be accessed',zh:'完整试验方案的获取途径'},
+        {n:'24',en:'Sources of funding and other support, role of funders',zh:'资金来源和其他支持，资助者的角色'},
+        {n:'25',en:'Addresses and contact information for the corresponding author',zh:'通讯作者的地址和联系信息'}
+      ]}
+    ]
+  },
+  strobe: {
+    title: 'STROBE', zh_title: 'STROBE',
+    ref: 'von Elm E, et al. Ann Intern Med. 2007;147(8):573-577.',
+    desc_en: 'STrengthening the Reporting of OBservational studies in Epidemiology. For cohort, case-control, and cross-sectional studies.',
+    desc_zh: '加强流行病学中观察性研究的报告。用于队列、病例对照和横断面研究。',
+    items: [
+      {s:'Title & Abstract',s_zh:'标题和摘要',items:[
+        {n:'1',en:'Indicate the study design with a commonly used term; provide an informative abstract',zh:'用常用术语指出研究设计；提供信息性摘要'}
+      ]},
+      {s:'Introduction',s_zh:'引言',items:[
+        {n:'2',en:'Explain the scientific background and rationale for the investigation',zh:'解释调查的科学背景和理由'},
+        {n:'3',en:'State specific objectives, including any prespecified hypotheses',zh:'陈述具体目标，包括预先指定的假设'}
+      ]},
+      {s:'Methods',s_zh:'方法',items:[
+        {n:'4',en:'Present key elements of study design early in the paper',zh:'在文章早期呈现研究设计的关键要素'},
+        {n:'5',en:'Describe the setting, locations, and relevant dates',zh:'描述环境、地点和相关日期'},
+        {n:'6',en:'Give the eligibility criteria and the sources and methods of selection',zh:'给出纳入标准和选择的来源和方法'},
+        {n:'7',en:'Clearly define all outcomes, exposures, predictors, potential confounders, and effect modifiers',zh:'清楚定义所有结局、暴露、预测因子、潜在混杂因素和效应修饰因素'},
+        {n:'8',en:'For each variable of interest, give sources of data and details of methods of assessment',zh:'对每个感兴趣的变量，给出数据来源和评估方法的详细信息'},
+        {n:'9',en:'Describe any efforts to address potential sources of bias',zh:'描述解决潜在偏倚来源的努力'},
+        {n:'10',en:'Explain how the study size was arrived at',zh:'解释研究规模如何确定'},
+        {n:'11',en:'Explain how quantitative variables were handled in the analyses',zh:'解释定量变量在分析中如何处理'},
+        {n:'12',en:'Describe all statistical methods, including those used to control for confounding',zh:'描述所有统计方法，包括用于控制混杂的方法'}
+      ]},
+      {s:'Results',s_zh:'结果',items:[
+        {n:'13',en:'Report numbers of individuals at each stage of study',zh:'报告研究各阶段的个体数量'},
+        {n:'14',en:'Give characteristics of study participants and information on exposures and confounders',zh:'给出研究参与者特征及暴露和混杂因素信息'},
+        {n:'15',en:'Report numbers of outcome events or summary measures',zh:'报告结局事件数量或汇总指标'},
+        {n:'16',en:'Give unadjusted estimates and, if applicable, confounder-adjusted estimates',zh:'给出未调整的估计值，如适用，给出混杂因素调整的估计值'},
+        {n:'17',en:'Report other analyses done -- e.g., subgroup and sensitivity analyses',zh:'报告其他分析——如亚组和敏感性分析'}
+      ]},
+      {s:'Discussion',s_zh:'讨论',items:[
+        {n:'18',en:'Summarise key results with reference to study objectives',zh:'结合研究目标总结关键结果'},
+        {n:'19',en:'Discuss limitations of the study, taking into account potential bias and imprecision',zh:'讨论研究局限性，考虑潜在偏倚和不精确性'},
+        {n:'20',en:'Give a cautious overall interpretation of results',zh:'对结果给出谨慎的总体解释'},
+        {n:'21',en:'Discuss the generalisability of the study results',zh:'讨论研究结果的普适性'}
+      ]},
+      {s:'Other',s_zh:'其他',items:[
+        {n:'22',en:'Give the source of funding and the role of the funders',zh:'给出资金来源和资助者的角色'}
+      ]}
+    ]
+  },
+  prisma: {
+    title: 'PRISMA 2020', zh_title: 'PRISMA 2020',
+    ref: 'Page MJ, et al. BMJ. 2021;372:n71.',
+    desc_en: 'Preferred Reporting Items for Systematic Reviews and Meta-Analyses. Updated 2020 version.',
+    desc_zh: '系统综述和荟萃分析的首选报告项目。2020年更新版本。',
+    items: [
+      {s:'Title',s_zh:'标题',items:[{n:'1',en:'Identify the report as a systematic review',zh:'在标题中标识为系统综述'}]},
+      {s:'Abstract',s_zh:'摘要',items:[{n:'2',en:'Provide a structured summary including background, objectives, data sources, study eligibility, synthesis methods, results, limitations, conclusions, registration',zh:'提供结构化摘要'}]},
+      {s:'Introduction',s_zh:'引言',items:[
+        {n:'3',en:'Describe the rationale for the review in the context of existing knowledge',zh:'在现有知识背景下描述综述的理由'},
+        {n:'4',en:'Provide an explicit statement of the objectives, using PICO',zh:'使用PICO提供明确的目标声明'}
+      ]},
+      {s:'Methods',s_zh:'方法',items:[
+        {n:'5',en:'Specify eligibility criteria and information sources',zh:'指定纳入标准和信息来源'},
+        {n:'6',en:'Present the full search strategies for all databases and registers',zh:'呈现所有数据库和注册中心的完整检索策略'},
+        {n:'7',en:'Specify the methods used to decide study eligibility',zh:'指定决定研究纳入资格的方法'},
+        {n:'8',en:'Specify the methods used to collect data from reports',zh:'指定从报告中收集数据的方法'},
+        {n:'9',en:'Specify the data items sought and any assumptions made',zh:'指定寻找的数据项和做出的假设'},
+        {n:'10',en:'List and define all outcomes',zh:'列出并定义所有结局'},
+        {n:'11',en:'Describe methods for assessing risk of bias',zh:'描述评估偏倚风险的方法'},
+        {n:'12',en:'Specify any methods used to synthesise results',zh:'指定用于合成结果的方法'},
+        {n:'13',en:'Describe methods for assessing certainty of evidence (e.g., GRADE)',zh:'描述评估证据确定性的方法（如GRADE）'}
+      ]},
+      {s:'Results',s_zh:'结果',items:[
+        {n:'14',en:'Report study selection process with PRISMA flow diagram',zh:'用PRISMA流程图报告研究选择过程'},
+        {n:'15',en:'Present characteristics of each included study',zh:'呈现每项纳入研究的特征'},
+        {n:'16',en:'Present assessments of risk of bias for each study',zh:'呈现每项研究的偏倚风险评估'},
+        {n:'17',en:'Present results of individual studies',zh:'呈现个别研究的结果'},
+        {n:'18',en:'Present results of each synthesis',zh:'呈现每项合成的结果'},
+        {n:'19',en:'Present results of reporting bias assessment',zh:'呈现报告偏倚评估的结果'},
+        {n:'20',en:'Present results of certainty assessment',zh:'呈现确定性评估的结果'}
+      ]},
+      {s:'Discussion',s_zh:'讨论',items:[
+        {n:'21',en:'Provide a general interpretation of results in context of other evidence',zh:'在其他证据的背景下提供结果的总体解释'},
+        {n:'22',en:'Discuss any limitations of the evidence and the review process',zh:'讨论证据和综述过程的任何局限性'},
+        {n:'23',en:'Provide a general interpretation and implications',zh:'提供总体解释和意义'}
+      ]},
+      {s:'Other',s_zh:'其他',items:[
+        {n:'24',en:'Provide registration information and where the protocol can be accessed',zh:'提供注册信息和方案的获取途径'},
+        {n:'25',en:'Describe sources of financial or other support and role of funders',zh:'描述财务或其他支持来源和资助者的角色'},
+        {n:'26',en:'Declare any competing interests',zh:'声明任何利益冲突'},
+        {n:'27',en:'Report availability of data, code, and other materials',zh:'报告数据、代码和其他材料的可用性'}
+      ]}
+    ]
+  },
+  stard: {
+    title: 'STARD 2015', zh_title: 'STARD 2015',
+    ref: 'Bossuyt PM, et al. BMJ. 2015;351:h5527.',
+    desc_en: 'Standards for Reporting of Diagnostic Accuracy Studies.',
+    desc_zh: '诊断准确性研究报告标准。',
+    items: [
+      {s:'Title & Abstract',s_zh:'标题和摘要',items:[
+        {n:'1',en:'Identify the article as a study of diagnostic accuracy (recommend MeSH "sensitivity and specificity")',zh:'将文章标识为诊断准确性研究'},
+        {n:'2',en:'Provide a structured abstract with study design, methods, results, conclusions',zh:'提供结构化摘要'}
+      ]},
+      {s:'Introduction',s_zh:'引言',items:[
+        {n:'3',en:'Scientific and clinical background, including intended use and clinical role of the index test',zh:'科学和临床背景，包括指标测试的预期用途和临床角色'},
+        {n:'4',en:'Study objectives and hypotheses',zh:'研究目标和假设'}
+      ]},
+      {s:'Methods',s_zh:'方法',items:[
+        {n:'5',en:'Whether data collection was planned before the index test and reference standard were performed (prospective) or after (retrospective)',zh:'数据收集是在指标测试和参考标准实施前（前瞻性）还是之后（回顾性）计划的'},
+        {n:'6',en:'Eligibility criteria',zh:'纳入标准'},
+        {n:'7',en:'On what basis potentially eligible participants were identified',zh:'在什么基础上识别潜在合格参与者'},
+        {n:'8',en:'Where and when potentially eligible participants were identified',zh:'在何处何时识别潜在合格参与者'},
+        {n:'9',en:'Whether participants formed a consecutive, random, or convenience series',zh:'参与者是连续、随机还是方便系列'},
+        {n:'10a',en:'Index test, in sufficient detail to allow replication',zh:'指标测试，足够详细以允许复制'},
+        {n:'10b',en:'Reference standard, in sufficient detail to allow replication',zh:'参考标准，足够详细以允许复制'},
+        {n:'11',en:'Rationale for choosing the reference standard',zh:'选择参考标准的理由'},
+        {n:'12a',en:'Definition of and rationale for test positivity cut-offs or result categories of the index test',zh:'指标测试阳性截断值或结果类别的定义和理由'},
+        {n:'12b',en:'Definition of and rationale for test positivity cut-offs or result categories of the reference standard',zh:'参考标准阳性截断值或结果类别的定义和理由'},
+        {n:'13a',en:'Whether clinical information and reference standard results were available to those performing the index test',zh:'执行指标测试者是否可获得临床信息和参考标准结果'},
+        {n:'13b',en:'Whether clinical information and index test results were available to those assessing the reference standard',zh:'评估参考标准者是否可获得临床信息和指标测试结果'},
+        {n:'14',en:'Methods for estimating or comparing measures of diagnostic accuracy',zh:'估计或比较诊断准确性指标的方法'},
+        {n:'15',en:'How indeterminate results, missing responses, and outliers were handled',zh:'不确定结果、缺失响应和异常值如何处理'},
+        {n:'16',en:'How missing data were handled',zh:'缺失数据如何处理'},
+        {n:'17',en:'Any analyses of variability in diagnostic accuracy',zh:'诊断准确性变异的任何分析'},
+        {n:'18',en:'Intended sample size and how it was determined',zh:'预期样本量及其确定方式'}
+      ]},
+      {s:'Results',s_zh:'结果',items:[
+        {n:'19',en:'Flow of participants, using a diagram',zh:'参与者流程，使用流程图'},
+        {n:'20',en:'Baseline demographic and clinical characteristics of participants',zh:'参与者的基线人口统计学和临床特征'},
+        {n:'21a',en:'Distribution of severity of disease in those with the target condition',zh:'有目标疾病者的疾病严重程度分布'},
+        {n:'21b',en:'Distribution of alternative diagnoses in those without the target condition',zh:'无目标疾病者的替代诊断分布'},
+        {n:'22',en:'Time interval between index test and reference standard',zh:'指标测试和参考标准之间的时间间隔'},
+        {n:'23',en:'Cross-tabulation of index test results by results of the reference standard',zh:'指标测试结果与参考标准结果的交叉表'},
+        {n:'24',en:'Estimates of diagnostic accuracy and their precision (95% CI)',zh:'诊断准确性的估计值及其精度（95% CI）'},
+        {n:'25',en:'Any adverse events from performing the index test or reference standard',zh:'执行指标测试或参考标准的任何不良事件'}
+      ]},
+      {s:'Discussion',s_zh:'讨论',items:[
+        {n:'26',en:'Study limitations including sources of potential bias, statistical uncertainty, and generalisability',zh:'研究局限性，包括潜在偏倚来源、统计不确定性和普适性'},
+        {n:'27',en:'Implications for practice, including intended use and clinical role',zh:'对实践的意义，包括预期用途和临床角色'}
+      ]},
+      {s:'Other',s_zh:'其他',items:[
+        {n:'28',en:'Registration number and name of registry',zh:'注册号和注册中心名称'},
+        {n:'29',en:'Where the full study protocol can be accessed',zh:'完整研究方案的获取途径'},
+        {n:'30',en:'Sources of funding and other support; role of funders',zh:'资金来源和其他支持；资助者的角色'}
+      ]}
+    ]
+  },
+  spirit: {
+    title: 'SPIRIT 2013', zh_title: 'SPIRIT 2013',
+    ref: 'Chan AW, et al. Ann Intern Med. 2013;158(3):200-207.',
+    desc_en: 'Standard Protocol Items: Recommendations for Interventional Trials.',
+    desc_zh: '标准方案项目：干预试验建议。',
+    items: [
+      {s:'Administrative',s_zh:'行政信息',items:[
+        {n:'1',en:'Descriptive title identifying the study design, population, interventions, and primary outcome',zh:'描述性标题，标识研究设计、人群、干预和主要结局'},
+        {n:'2a',en:'Trial registration number and registry name',zh:'试验注册号和注册中心名称'},
+        {n:'2b',en:'All items from the WHO Trial Registration Data Set',zh:'WHO试验注册数据集的所有项目'},
+        {n:'3',en:'Date and version identifier for the protocol',zh:'方案的日期和版本标识'},
+        {n:'4',en:'Sources and types of financial, material, and other support',zh:'财务、物质和其他支持的来源和类型'},
+        {n:'5a',en:'Names, affiliations, and roles of protocol contributors',zh:'方案贡献者的姓名、单位和角色'},
+        {n:'5b',en:'Name and contact information for the trial sponsor',zh:'试验资助者的姓名和联系信息'},
+        {n:'5c',en:'Role of study sponsor and funders',zh:'研究资助者和资金提供者的角色'},
+        {n:'5d',en:'Composition, roles, and responsibilities of the data monitoring committee',zh:'数据监测委员会的组成、角色和职责'}
+      ]},
+      {s:'Introduction',s_zh:'引言',items:[
+        {n:'6a',en:'Description of research question and justification for the trial',zh:'研究问题的描述和试验的合理性'},
+        {n:'6b',en:'Summary of relevant studies and systematic reviews',zh:'相关研究和系统综述的总结'},
+        {n:'7',en:'Specific objectives or hypotheses',zh:'具体目标或假设'}
+      ]},
+      {s:'Methods: Participants',s_zh:'方法：参与者',items:[
+        {n:'8',en:'Description of study settings and list of study sites',zh:'研究场所描述和研究地点列表'},
+        {n:'9',en:'Eligibility criteria for participants',zh:'参与者的纳入标准'},
+        {n:'10',en:'Interventions for each group with sufficient details for replication',zh:'各组干预的足够详细描述以便复制'},
+        {n:'11a',en:'Criteria for discontinuing or modifying allocated interventions',zh:'中止或修改分配干预的标准'},
+        {n:'11b',en:'Criteria for discontinuing or modifying trial procedures',zh:'中止或修改试验程序的标准'},
+        {n:'11c',en:'Criteria for discontinuing or modifying trial as a whole',zh:'中止或修改整个试验的标准'},
+        {n:'11d',en:'Strategies to improve adherence to intervention protocols',zh:'提高干预方案依从性的策略'}
+      ]},
+      {s:'Methods: Design',s_zh:'方法：设计',items:[
+        {n:'12',en:'Primary, secondary, and other outcomes including assessment instruments and time points',zh:'主要、次要和其他结局，包括评估工具和时间点'},
+        {n:'13',en:'Participant timeline diagram showing enrolment, interventions, and assessments',zh:'参与者时间线图，显示入组、干预和评估'},
+        {n:'14',en:'Estimated number of participants needed with statistical justification',zh:'需要的估计参与者数量及统计学论证'},
+        {n:'15',en:'Strategies for recruitment and retention',zh:'招募和保留策略'}
+      ]},
+      {s:'Methods: Randomisation',s_zh:'方法：随机化',items:[
+        {n:'16a',en:'Method of generating the allocation sequence',zh:'生成分配序列的方法'},
+        {n:'16b',en:'Type of randomisation with details of restriction',zh:'随机化类型及限制详情'},
+        {n:'16c',en:'Mechanism of implementing the allocation sequence',zh:'实施分配序列的机制'},
+        {n:'17a',en:'Who will generate the allocation sequence, enrol participants, and assign participants',zh:'谁将生成分配序列、纳入参与者和分配参与者'},
+        {n:'17b',en:'Mechanism of implementing allocation concealment and blinding',zh:'实施分配隐藏和盲法的机制'},
+        {n:'18a',en:'Who will be blinded after assignment and how',zh:'分配后谁将被盲法及如何实施'},
+        {n:'18b',en:'Procedure for revealing a participant\'s allocated intervention during the trial',zh:'试验期间揭示参与者分配干预的程序'}
+      ]},
+      {s:'Methods: Data & Analysis',s_zh:'方法：数据和分析',items:[
+        {n:'19',en:'Plans for data collection including CRFs and source data verification',zh:'数据收集计划，包括CRF和源数据核查'},
+        {n:'20a',en:'Statistical methods for primary and secondary outcomes',zh:'主要和次要结局的统计方法'},
+        {n:'20b',en:'Methods for additional analyses (subgroup, adjusted analyses)',zh:'额外分析的方法（亚组、调整分析）'},
+        {n:'20c',en:'Definition of the analysis population relating to the protocol',zh:'与方案相关的分析人群定义'},
+        {n:'21a',en:'Plans for assessment and collection of data on adverse events',zh:'不良事件数据的评估和收集计划'},
+        {n:'21b',en:'Plans for interim analyses and stopping guidelines',zh:'中期分析和终止指南的计划'}
+      ]},
+      {s:'Ethics & Dissemination',s_zh:'伦理和传播',items:[
+        {n:'22',en:'Plans for seeking research ethics committee/IRB approval',zh:'寻求研究伦理委员会/IRB批准的计划'},
+        {n:'23',en:'Plans for important protocol amendments to relevant parties',zh:'向相关方通报重要方案修正的计划'},
+        {n:'24',en:'Plans for informed consent',zh:'知情同意计划'},
+        {n:'25',en:'Plans for confidentiality of personal information',zh:'个人信息保密计划'},
+        {n:'26a',en:'Plans for post-trial care and provision of intervention',zh:'试验后护理和干预提供计划'},
+        {n:'26b',en:'Financial and other competing interests for investigators',zh:'研究者的财务和其他利益冲突'},
+        {n:'27',en:'Plans for investigator and sponsor data access',zh:'研究者和资助者数据访问计划'},
+        {n:'28',en:'Plans for collection, laboratory evaluation, and storage of biological specimens',zh:'生物标本的采集、实验室评估和储存计划'},
+        {n:'29',en:'Plans for communicating trial results to participants, professionals, the public',zh:'向参与者、专业人员、公众传达试验结果的计划'},
+        {n:'30',en:'Authorship eligibility guidelines and use of professional writers',zh:'作者资格指南和专业写手的使用'},
+        {n:'31',en:'Plans for granting public access to the full protocol, datasets, and statistical code',zh:'授予公众访问完整方案、数据集和统计代码的计划'},
+        {n:'32',en:'Plans for data collection, management, and analysis',zh:'数据收集、管理和分析计划'},
+        {n:'33',en:'Plans for archiving and long-term access',zh:'归档和长期访问计划'}
+      ]}
+    ]
+  }
+};
+
+function showReportSub(id) {
+  currentReportSub = id;
+  document.querySelectorAll('#panel-reporting .sub-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  renderReportingChecklist(id);
+}
+
+function renderReportingChecklist(id) {
+  const data = reportingData[id];
+  if (!data) return;
+  const isZh = currentLang === 'zh';
+  const totalItems = data.items.reduce((sum, s) => sum + s.items.length, 0);
+
+  let html = `
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-header">${data.title} &mdash; ${isZh ? data.desc_zh : data.desc_en}</div>
+      <div class="card-body" style="padding:12px 20px">
+        <p style="font-size:11px;color:var(--text-muted);margin-bottom:10px">${isZh ? '参考文献：' : 'Reference: '}${data.ref}</p>
+        <div class="progress-bar"><div class="progress-fill" id="rp-progress-${id}" style="width:0%"></div></div>
+        <div class="progress-label" id="rp-label-${id}">0 / ${totalItems} (0%)</div>
+      </div>
+    </div>`;
+
+  data.items.forEach(section => {
+    html += `<div class="card" style="margin-bottom:12px">
+      <div class="card-header">${isZh ? section.s_zh : section.s}</div>
+      <div class="card-body" style="padding:0">`;
+    section.items.forEach(item => {
+      html += `
+        <div class="checklist-item">
+          <span class="cl-num">${item.n}</span>
+          <input type="checkbox" data-checklist="${id}" onchange="updateChecklistProgress('${id}', ${totalItems})">
+          <div style="flex:1">
+            <div class="cl-text">${isZh ? item.zh : item.en}</div>
+            <input type="text" class="cl-notes" placeholder="${isZh ? '页码/备注...' : 'Page/notes...'}">
+          </div>
+        </div>`;
+    });
+    html += `</div></div>`;
+  });
+
+  html += `<div style="margin-top:16px;display:flex;gap:12px">
+    <button class="btn" onclick="window.print()">${isZh ? '打印检查清单' : 'Print Checklist'}</button>
+    <button class="btn" onclick="checkAll('${id}', ${totalItems})">${isZh ? '全选' : 'Check All'}</button>
+    <button class="btn" onclick="uncheckAll('${id}', ${totalItems})">${isZh ? '全不选' : 'Uncheck All'}</button>
+  </div>`;
+
+  document.getElementById('reporting-content').innerHTML = html;
+}
+
+function updateChecklistProgress(id, total) {
+  const checked = document.querySelectorAll(`input[data-checklist="${id}"]:checked`).length;
+  const pct = Math.round((checked / total) * 100);
+  const bar = document.getElementById('rp-progress-' + id);
+  const label = document.getElementById('rp-label-' + id);
+  if (bar) bar.style.width = pct + '%';
+  if (label) label.textContent = `${checked} / ${total} (${pct}%)`;
+}
+
+function checkAll(id, total) {
+  document.querySelectorAll(`input[data-checklist="${id}"]`).forEach(cb => cb.checked = true);
+  updateChecklistProgress(id, total);
+}
+
+function uncheckAll(id, total) {
+  document.querySelectorAll(`input[data-checklist="${id}"]`).forEach(cb => cb.checked = false);
+  updateChecklistProgress(id, total);
+}
+
+// ==========================================
+// Timeline Planner (Tab 5)
+// ==========================================
+const templates = {
+  rct: [
+    { name_en: 'Protocol Development', name_zh: '方案制定', weeks: 12, color: '#6366f1' },
+    { name_en: 'Ethics Approval', name_zh: '伦理审批', weeks: 8, color: '#8b5cf6' },
+    { name_en: 'Site Setup', name_zh: '现场准备', weeks: 6, color: '#a78bfa' },
+    { name_en: 'Recruitment', name_zh: '招募', weeks: 24, color: '#2d5a3d' },
+    { name_en: 'Intervention', name_zh: '干预', weeks: 26, color: '#4a8a5d' },
+    { name_en: 'Follow-up', name_zh: '随访', weeks: 12, color: '#06b6d4' },
+    { name_en: 'Data Cleaning', name_zh: '数据清理', weeks: 6, color: '#f59e0b' },
+    { name_en: 'Analysis', name_zh: '分析', weeks: 8, color: '#ef4444' },
+    { name_en: 'Manuscript Writing', name_zh: '撰写论文', weeks: 12, color: '#8b2c2c' }
+  ],
+  cohort: [
+    { name_en: 'Protocol Development', name_zh: '方案制定', weeks: 8, color: '#6366f1' },
+    { name_en: 'Ethics Approval', name_zh: '伦理审批', weeks: 6, color: '#8b5cf6' },
+    { name_en: 'Baseline Assessment', name_zh: '基线评估', weeks: 16, color: '#2d5a3d' },
+    { name_en: 'Follow-up Year 1', name_zh: '随访第1年', weeks: 52, color: '#4a8a5d' },
+    { name_en: 'Follow-up Year 2', name_zh: '随访第2年', weeks: 52, color: '#06b6d4' },
+    { name_en: 'Data Cleaning', name_zh: '数据清理', weeks: 8, color: '#f59e0b' },
+    { name_en: 'Analysis', name_zh: '分析', weeks: 10, color: '#ef4444' },
+    { name_en: 'Manuscript Writing', name_zh: '撰写论文', weeks: 12, color: '#8b2c2c' }
+  ],
+  cross: [
+    { name_en: 'Protocol Development', name_zh: '方案制定', weeks: 6, color: '#6366f1' },
+    { name_en: 'Ethics Approval', name_zh: '伦理审批', weeks: 4, color: '#8b5cf6' },
+    { name_en: 'Questionnaire Development', name_zh: '问卷制定', weeks: 6, color: '#a78bfa' },
+    { name_en: 'Pilot Testing', name_zh: '预测试', weeks: 3, color: '#2d5a3d' },
+    { name_en: 'Data Collection', name_zh: '数据收集', weeks: 12, color: '#4a8a5d' },
+    { name_en: 'Data Cleaning', name_zh: '数据清理', weeks: 4, color: '#f59e0b' },
+    { name_en: 'Analysis', name_zh: '分析', weeks: 6, color: '#ef4444' },
+    { name_en: 'Manuscript Writing', name_zh: '撰写论文', weeks: 10, color: '#8b2c2c' }
+  ],
+  custom: [
+    { name_en: 'Phase 1', name_zh: '阶段1', weeks: 8, color: '#6366f1' },
+    { name_en: 'Phase 2', name_zh: '阶段2', weeks: 12, color: '#2d5a3d' },
+    { name_en: 'Phase 3', name_zh: '阶段3', weeks: 8, color: '#ef4444' }
+  ]
+};
+
+let currentPhases = [];
+
+function loadTemplate() {
+  const tmpl = document.getElementById('tl-template').value;
+  currentPhases = JSON.parse(JSON.stringify(templates[tmpl]));
+  renderPhases();
+}
+
+function renderPhases() {
+  const isZh = currentLang === 'zh';
+  const el = document.getElementById('tl-phases');
+  el.innerHTML = currentPhases.map((p, i) => `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <div style="width:12px;height:12px;border-radius:3px;background:${p.color};flex-shrink:0"></div>
+      <input type="text" value="${isZh ? p.name_zh : p.name_en}" onchange="currentPhases[${i}].name_en=this.value;currentPhases[${i}].name_zh=this.value" style="flex:1;font-size:12px;padding:6px 8px">
+      <input type="number" value="${p.weeks}" min="1" max="520" onchange="currentPhases[${i}].weeks=parseInt(this.value)" style="width:60px;font-size:12px;padding:6px 8px;text-align:center">
+      <span style="font-size:10px;color:var(--text-muted)">${isZh ? '周' : 'wk'}</span>
+      <button class="btn btn-sm" onclick="removePhase(${i})" style="padding:4px 8px;font-size:10px;color:var(--danger);border-color:var(--danger)">&times;</button>
+    </div>`).join('') + `
+    <button class="btn btn-sm" onclick="addPhase()" style="margin-top:8px">${isZh ? '+ 添加阶段' : '+ Add Phase'}</button>`;
+}
+
+function addPhase() {
+  const colors = ['#6366f1','#8b5cf6','#a78bfa','#2d5a3d','#4a8a5d','#06b6d4','#f59e0b','#ef4444','#8b2c2c','#ec4899'];
+  currentPhases.push({ name_en: 'New Phase', name_zh: '新阶段', weeks: 4, color: colors[currentPhases.length % colors.length] });
+  renderPhases();
+}
+
+function removePhase(i) {
+  currentPhases.splice(i, 1);
+  renderPhases();
+}
+
+function generateGantt() {
+  const isZh = currentLang === 'zh';
+  const startDate = new Date(document.getElementById('tl-start').value);
+  if (isNaN(startDate)) return;
+
+  const totalWeeks = currentPhases.reduce((s, p) => s + p.weeks, 0);
+  if (totalWeeks === 0) return;
+
+  let cumWeeks = 0;
+  const phases = currentPhases.map(p => {
+    const start = cumWeeks;
+    cumWeeks += p.weeks;
+    return { ...p, startWeek: start, endWeek: cumWeeks };
+  });
+
+  // Gantt chart
+  const barWidth = 100; // percentage
+  let ganttHtml = `<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted)">`;
+  // Month markers
+  const months = [];
+  for (let w = 0; w <= totalWeeks; w += 4) {
+    const d = new Date(startDate);
+    d.setDate(d.getDate() + w * 7);
+    const label = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+    if (months.length === 0 || months[months.length - 1] !== label) {
+      months.push(label);
+      ganttHtml += `<span>${label}</span>`;
+    }
+  }
+  ganttHtml += `</div></div>`;
+
+  phases.forEach(p => {
+    const left = (p.startWeek / totalWeeks * 100).toFixed(1);
+    const width = (p.weeks / totalWeeks * 100).toFixed(1);
+    const name = isZh ? p.name_zh : p.name_en;
+    ganttHtml += `
+      <div class="gantt-row">
+        <div class="gantt-label">${name}</div>
+        <div class="gantt-track">
+          <div class="gantt-bar" style="left:${left}%;width:${width}%;background:${p.color}">${p.weeks}w</div>
+        </div>
+      </div>`;
+  });
+
+  // Total duration
+  const endDate = new Date(startDate);
+  endDate.setDate(endDate.getDate() + totalWeeks * 7);
+  ganttHtml += `<div style="margin-top:16px;font-size:12px;color:var(--text-muted);text-align:center">
+    ${isZh ? '总持续时间：' : 'Total duration: '}<strong>${totalWeeks} ${isZh ? '周' : 'weeks'}</strong>
+    (${startDate.toLocaleDateString()} &rarr; ${endDate.toLocaleDateString()})
+  </div>`;
+
+  document.getElementById('tl-gantt').innerHTML = ganttHtml;
+
+  // Milestones
+  let msHtml = '';
+  let cumW = 0;
+  phases.forEach((p, i) => {
+    cumW += p.weeks;
+    const mDate = new Date(startDate);
+    mDate.setDate(mDate.getDate() + cumW * 7);
+    const name = isZh ? p.name_zh : p.name_en;
+    msHtml += `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="width:10px;height:10px;border-radius:50%;background:${p.color};flex-shrink:0"></div>
+      <span style="font-size:12px;flex:1">${name} ${isZh ? '完成' : 'complete'}</span>
+      <span style="font-size:11px;color:var(--text-muted)">${mDate.toLocaleDateString()}</span>
+    </div>`;
+  });
+  document.getElementById('tl-milestones').innerHTML = msHtml;
+}
+
+// ==========================================
+// Power sub-tabs
+// ==========================================
+function showPowerSub(id) {
+  document.querySelectorAll('#panel-power .sub-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('#panel-power .sub-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('power-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ==========================================
+// Init
+// ==========================================
+document.addEventListener('DOMContentLoaded', function() {
+  initBiasAssessment();
+  loadTemplate();
+  renderReportingChecklist('consort');
+});
+</script>
+</body>
+</html>
