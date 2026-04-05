@@ -654,16 +654,93 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
 
 /* Footer */
 footer {
-  background: var(--surface2);
-  border-top: 1px solid var(--border);
-  padding: 24px 32px;
-  text-align: center;
-  font-size: 11px;
-  color: var(--text-muted);
-  line-height: 1.8;
+  background: var(--text);
+  color: rgba(255,255,255,0.5);
+  padding: 0;
+  margin-top: 48px;
 }
-footer a { color: var(--accent); text-decoration: none; }
+.footer-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 32px 28px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 32px;
+  align-items: start;
+}
+.footer-section-title {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+  margin-bottom: 10px;
+}
+.footer-logo-section .f-org {
+  font-family: 'DM Serif Display', serif;
+  font-size: 16px;
+  color: rgba(255,255,255,0.8);
+  margin-bottom: 4px;
+}
+.footer-logo-section .f-org-full {
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  line-height: 1.5;
+}
+.footer-author-section .f-name {
+  font-size: 13px;
+  color: rgba(255,255,255,0.8);
+  margin-bottom: 2px;
+}
+.footer-author-section .f-role {
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+.footer-feedback-section .f-feedback-text {
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+.footer-email-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--accent);
+  color: white;
+  text-decoration: none;
+  padding: 9px 16px;
+  border-radius: 3px;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  transition: background 0.2s;
+}
+.footer-email-btn:hover { background: var(--accent-light); }
+.footer-bottom {
+  border-top: 1px solid rgba(255,255,255,0.07);
+  padding: 16px 32px;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10px;
+  color: rgba(255,255,255,0.25);
+  letter-spacing: 0.3px;
+}
+.footer-disclaimer {
+  font-size: 10px;
+  color: rgba(255,255,255,0.25);
+  max-width: 600px;
+  line-height: 1.5;
+}
+footer a { color: rgba(255,255,255,0.7); text-decoration: none; }
 footer a:hover { text-decoration: underline; }
+@media (max-width: 768px) {
+  .footer-inner { grid-template-columns: 1fr; gap: 24px; padding: 24px 16px; }
+  .footer-bottom { flex-direction: column; gap: 8px; text-align: center; padding: 16px; }
+}
 
 /* Responsive */
 @media (max-width: 768px) {
@@ -816,26 +893,26 @@ footer a:hover { text-decoration: underline; }
           <div class="two-col" style="gap:12px">
             <div class="field-group">
               <label data-en="Condition / Disease" data-zh="疾病/状况">Condition / Disease</label>
-              <input type="text" id="pico-condition" placeholder="e.g., Type 2 Diabetes">
+              <input type="text" id="pico-condition" placeholder="e.g., Type 2 Diabetes" data-ph-en="e.g., Type 2 Diabetes" data-ph-zh="如：2型糖尿病">
             </div>
             <div class="field-group">
               <label data-en="Age Range" data-zh="年龄范围">Age Range</label>
-              <input type="text" id="pico-age" placeholder="e.g., 18-65 years">
+              <input type="text" id="pico-age" placeholder="e.g., 18-65 years" data-ph-en="e.g., 18-65 years" data-ph-zh="如：18-65岁">
             </div>
           </div>
           <div class="two-col" style="gap:12px;margin-top:12px">
             <div class="field-group">
               <label data-en="Setting" data-zh="研究场所">Setting</label>
-              <input type="text" id="pico-setting" placeholder="e.g., Primary care clinics">
+              <input type="text" id="pico-setting" placeholder="e.g., Primary care clinics" data-ph-en="e.g., Primary care clinics" data-ph-zh="如：初级保健诊所">
             </div>
             <div class="field-group">
               <label data-en="Key Inclusion Criteria" data-zh="主要纳入标准">Key Inclusion Criteria</label>
-              <input type="text" id="pico-inclusion" placeholder="e.g., HbA1c > 7.0%">
+              <input type="text" id="pico-inclusion" placeholder="e.g., HbA1c > 7.0%" data-ph-en="e.g., HbA1c > 7.0%" data-ph-zh="如：HbA1c > 7.0%">
             </div>
           </div>
           <div class="field-group" style="margin-top:12px">
             <label data-en="Key Exclusion Criteria" data-zh="主要排除标准">Key Exclusion Criteria</label>
-            <input type="text" id="pico-exclusion" placeholder="e.g., Renal failure, pregnancy">
+            <input type="text" id="pico-exclusion" placeholder="e.g., Renal failure, pregnancy" data-ph-en="e.g., Renal failure, pregnancy" data-ph-zh="如：肾衰竭、妊娠">
           </div>
         </div>
       </div>
@@ -847,16 +924,16 @@ footer a:hover { text-decoration: underline; }
           <p class="pico-desc" data-en="What treatment, exposure, or diagnostic test?" data-zh="什么治疗、暴露或诊断测试？">What treatment, exposure, or diagnostic test?</p>
           <div class="field-group">
             <label data-en="Description" data-zh="描述">Description</label>
-            <input type="text" id="pico-intervention" placeholder="e.g., GLP-1 receptor agonist (semaglutide 1mg weekly)">
+            <input type="text" id="pico-intervention" placeholder="e.g., GLP-1 receptor agonist (semaglutide 1mg weekly)" data-ph-en="e.g., GLP-1 receptor agonist (semaglutide 1mg weekly)" data-ph-zh="如：GLP-1受体激动剂（司美格鲁肽1mg/周）">
           </div>
           <div class="two-col" style="gap:12px;margin-top:12px">
             <div class="field-group">
               <label data-en="Dosage / Intensity (if applicable)" data-zh="剂量/强度（如适用）">Dosage / Intensity (if applicable)</label>
-              <input type="text" id="pico-dosage" placeholder="e.g., 1mg subcutaneous weekly">
+              <input type="text" id="pico-dosage" placeholder="e.g., 1mg subcutaneous weekly" data-ph-en="e.g., 1mg subcutaneous weekly" data-ph-zh="如：1mg 皮下注射 每周一次">
             </div>
             <div class="field-group">
               <label data-en="Duration" data-zh="持续时间">Duration</label>
-              <input type="text" id="pico-duration" placeholder="e.g., 52 weeks">
+              <input type="text" id="pico-duration" placeholder="e.g., 52 weeks" data-ph-en="e.g., 52 weeks" data-ph-zh="如：52周">
             </div>
           </div>
         </div>
@@ -878,7 +955,7 @@ footer a:hover { text-decoration: underline; }
           </div>
           <div class="field-group" style="margin-top:12px">
             <label data-en="Comparator Description" data-zh="对照描述">Comparator Description</label>
-            <input type="text" id="pico-comparator" placeholder="e.g., Metformin 2000mg daily">
+            <input type="text" id="pico-comparator" placeholder="e.g., Metformin 2000mg daily" data-ph-en="e.g., Metformin 2000mg daily" data-ph-zh="如：二甲双胍 2000mg/日">
           </div>
         </div>
       </div>
@@ -890,12 +967,12 @@ footer a:hover { text-decoration: underline; }
           <p class="pico-desc" data-en="What outcome are you measuring?" data-zh="您测量什么结局？">What outcome are you measuring?</p>
           <div class="field-group">
             <label data-en="Primary Outcome" data-zh="主要结局">Primary Outcome</label>
-            <input type="text" id="pico-primary" placeholder="e.g., Change in HbA1c from baseline">
+            <input type="text" id="pico-primary" placeholder="e.g., Change in HbA1c from baseline" data-ph-en="e.g., Change in HbA1c from baseline" data-ph-zh="如：基线HbA1c变化">
           </div>
           <div class="two-col" style="gap:12px;margin-top:12px">
             <div class="field-group">
               <label data-en="Secondary Outcomes" data-zh="次要结局">Secondary Outcomes</label>
-              <input type="text" id="pico-secondary" placeholder="e.g., Weight change, adverse events">
+              <input type="text" id="pico-secondary" placeholder="e.g., Weight change, adverse events" data-ph-en="e.g., Weight change, adverse events" data-ph-zh="如：体重变化、不良事件">
             </div>
             <div class="field-group">
               <label data-en="Outcome Type" data-zh="结局类型">Outcome Type</label>
@@ -1324,9 +1401,34 @@ footer a:hover { text-decoration: underline; }
 </main>
 
 <footer>
-  <div data-en="Author: Dr. Nana Liu, PhD &mdash; Erasmus MC" data-zh="作者: 刘娜博士 &mdash; Erasmus MC">Author: Dr. Nana Liu, PhD &mdash; Erasmus MC</div>
-  <div data-en="For research planning and educational purposes. Not a substitute for biostatistical consultation." data-zh="仅供研究规划和教育目的。不能替代生物统计学咨询。">For research planning and educational purposes. Not a substitute for biostatistical consultation.</div>
-  <div style="margin-top:4px"><a href="../sample-size-calculator/index.html" data-en="Sample Size Calculator" data-zh="样本量计算器">Sample Size Calculator</a></div>
+  <div class="footer-inner">
+    <div class="footer-logo-section">
+      <div class="footer-section-title" data-en="Tool" data-zh="工具">Tool</div>
+      <div class="f-org">EpiDataKit</div>
+      <div class="f-org-full" data-en="Clinical & Epidemiological Research Tools" data-zh="临床与流行病学研究工具">Clinical & Epidemiological Research Tools</div>
+    </div>
+    <div class="footer-author-section">
+      <div class="footer-section-title" data-en="Author" data-zh="作者">Author</div>
+      <div class="f-name">Dr. Nana Liu, PhD</div>
+      <div class="f-role">Erasmus MC</div>
+    </div>
+    <div class="footer-feedback-section">
+      <div class="footer-section-title" data-en="Contact" data-zh="联系方式">Contact</div>
+      <div class="f-feedback-text" data-en="Questions, suggestions, or bug reports are welcome." data-zh="欢迎提出问题、建议或错误报告。">Questions, suggestions, or bug reports are welcome.</div>
+      <a href="mailto:nana@epidatakit.com" class="footer-email-btn">&#9993; nana@epidatakit.com</a>
+    </div>
+    <div style="grid-column: 1 / -1; border-top: 1px solid rgba(255,255,255,0.15); padding-top: 20px; margin-top: 20px; text-align: center;">
+      <p style="font-size: 12px; color: rgba(255,255,255,0.7); margin-bottom: 8px;" data-en="MedResearch Tools" data-zh="医学研究工具">MedResearch Tools</p>
+      <p style="font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 8px;">
+        <a href="../sample-size-calculator/index.html" style="color: rgba(255,255,255,0.7);" data-en="Sample Size Calculator" data-zh="样本量计算器">Sample Size Calculator</a> &nbsp;|&nbsp;
+        <a href="../clinical-randomization/index.html" style="color: rgba(255,255,255,0.7);" data-en="Clinical Randomization Tool" data-zh="临床随机化工具">Clinical Randomization Tool</a>
+      </p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-disclaimer" data-en="For research planning and educational purposes. Not a substitute for biostatistical consultation." data-zh="仅供研究规划和教育目的。不能替代生物统计学咨询。">For research planning and educational purposes. Not a substitute for biostatistical consultation.</div>
+    <div>&copy; 2024-2026 Dr. Nana Liu</div>
+  </div>
 </footer>
 
 <script>
@@ -1350,6 +1452,11 @@ function setLang(lang) {
         el.innerHTML = val;
       }
     }
+  });
+  // Update placeholders with language-specific text
+  document.querySelectorAll('[data-ph-' + lang + ']').forEach(el => {
+    const ph = el.getAttribute('data-ph-' + lang);
+    if (ph) el.placeholder = ph;
   });
   // Re-render dynamic content
   if (currentReportSub) showReportSub(currentReportSub);
