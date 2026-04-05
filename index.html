@@ -1003,9 +1003,9 @@ footer a:hover { text-decoration: underline; }
   </div>
 
   <div class="sub-tab-bar">
-    <button class="sub-tab active" onclick="showBiasSub('rob2')">RoB 2 (RCTs)</button>
-    <button class="sub-tab" onclick="showBiasSub('nos')">NOS (Observational)</button>
-    <button class="sub-tab" onclick="showBiasSub('quadas')">QUADAS-2 (Diagnostic)</button>
+    <button class="sub-tab active" onclick="showBiasSub('rob2')" data-en="RoB 2 (RCTs)" data-zh="RoB 2 (RCT)">RoB 2 (RCTs)</button>
+    <button class="sub-tab" onclick="showBiasSub('nos')" data-en="NOS (Observational)" data-zh="NOS (观察性)">NOS (Observational)</button>
+    <button class="sub-tab" onclick="showBiasSub('quadas')" data-en="QUADAS-2 (Diagnostic)" data-zh="QUADAS-2 (诊断性)">QUADAS-2 (Diagnostic)</button>
   </div>
 
   <!-- RoB 2 -->
@@ -1165,15 +1165,15 @@ footer a:hover { text-decoration: underline; }
 <div class="panel" id="panel-power">
   <div class="panel-header">
     <h2 data-en="Power & Effect Size Guide" data-zh="功效与效应量指南">Power & Effect Size Guide</h2>
-    <p class="desc" data-en="Educational reference for statistical power, effect sizes, and sample size planning. For calculations, use the " data-zh="统计功效、效应量和样本量规划的教育参考。如需计算，请使用">Educational reference for statistical power, effect sizes, and sample size planning. For calculations, use the <a href="../sample-size-calculator/index.html" style="color:var(--accent)">Sample Size Calculator</a>.</p>
+    <p class="desc" data-en="Educational reference for statistical power, effect sizes, and sample size planning. For calculations, use the <a href='../sample-size-calculator/index.html' style='color:var(--accent)'>Sample Size Calculator</a>." data-zh="统计功效、效应量和样本量规划的教育参考。如需计算，请使用<a href='../sample-size-calculator/index.html' style='color:var(--accent)'>样本量计算器</a>。">Educational reference for statistical power, effect sizes, and sample size planning. For calculations, use the <a href="../sample-size-calculator/index.html" style="color:var(--accent)">Sample Size Calculator</a>.</p>
   </div>
 
   <div class="sub-tab-bar">
-    <button class="sub-tab active" onclick="showPowerSub('cohen')">Cohen's Conventions</button>
-    <button class="sub-tab" onclick="showPowerSub('domain')">Effect Sizes by Domain</button>
-    <button class="sub-tab" onclick="showPowerSub('quickref')">Quick Reference</button>
-    <button class="sub-tab" onclick="showPowerSub('mcid')">MCID Guide</button>
-    <button class="sub-tab" onclick="showPowerSub('errors')">Type I & II Errors</button>
+    <button class="sub-tab active" onclick="showPowerSub('cohen')" data-en="Cohen's Conventions" data-zh="Cohen效应量规范">Cohen's Conventions</button>
+    <button class="sub-tab" onclick="showPowerSub('domain')" data-en="Effect Sizes by Domain" data-zh="各领域效应量">Effect Sizes by Domain</button>
+    <button class="sub-tab" onclick="showPowerSub('quickref')" data-en="Quick Reference" data-zh="快速参考">Quick Reference</button>
+    <button class="sub-tab" onclick="showPowerSub('mcid')" data-en="MCID Guide" data-zh="MCID指南">MCID Guide</button>
+    <button class="sub-tab" onclick="showPowerSub('errors')" data-en="Type I & II Errors" data-zh="I类和II类错误">Type I & II Errors</button>
   </div>
 
   <!-- Cohen's Conventions -->
@@ -1270,7 +1270,7 @@ footer a:hover { text-decoration: underline; }
             <tr><td class="mono">10%</td><td class="mono">5%</td><td class="mono">0.50</td><td class="mono">434</td><td class="mono">868</td></tr>
           </tbody>
         </table>
-        <p style="font-size:11px;color:var(--text-muted);margin-top:12px" data-en="For exact calculations, use the Sample Size Calculator." data-zh="如需精确计算，请使用样本量计算器。">For exact calculations, use the <a href="../sample-size-calculator/index.html" style="color:var(--accent)">Sample Size Calculator</a>.</p>
+        <p style="font-size:11px;color:var(--text-muted);margin-top:12px" data-en="For exact calculations, use the <a href='../sample-size-calculator/index.html' style='color:var(--accent)'>Sample Size Calculator</a>." data-zh="如需精确计算，请使用<a href='../sample-size-calculator/index.html' style='color:var(--accent)'>样本量计算器</a>。">For exact calculations, use the <a href="../sample-size-calculator/index.html" style="color:var(--accent)">Sample Size Calculator</a>.</p>
       </div>
     </div>
   </div>
@@ -1472,7 +1472,10 @@ function showPanel(id) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('panel-' + id).classList.add('active');
-  event.target.classList.add('active');
+  // Find the nav-tab that corresponds to this panel by matching onclick
+  document.querySelectorAll('.nav-tab').forEach(t => {
+    if (t.getAttribute('onclick') === "showPanel('" + id + "')") t.classList.add('active');
+  });
 }
 
 // ==========================================
@@ -1631,7 +1634,10 @@ function dtSelect(step, value) {
   // Mark selected
   const qEl = document.getElementById(step === '3b' ? 'dt-q3b' : 'dt-q' + step);
   qEl.querySelectorAll('.dt-option').forEach(o => o.classList.remove('selected'));
-  event.target.closest('.dt-option').classList.add('selected');
+  if (typeof event !== 'undefined' && event && event.target) {
+    const opt = event.target.closest('.dt-option');
+    if (opt) opt.classList.add('selected');
+  }
 
   dtState['q' + step] = value;
 
@@ -1939,7 +1945,9 @@ function showBiasSub(id) {
   document.querySelectorAll('#panel-bias .sub-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('#panel-bias .sub-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('bias-' + id).classList.add('active');
-  event.target.classList.add('active');
+  document.querySelectorAll('#panel-bias .sub-tab').forEach(t => {
+    if (t.getAttribute('onclick') === "showBiasSub('" + id + "')") t.classList.add('active');
+  });
 }
 
 // ==========================================
@@ -2222,7 +2230,9 @@ const reportingData = {
 function showReportSub(id) {
   currentReportSub = id;
   document.querySelectorAll('#panel-reporting .sub-tab').forEach(t => t.classList.remove('active'));
-  event.target.classList.add('active');
+  document.querySelectorAll('#panel-reporting .sub-tab').forEach(t => {
+    if (t.getAttribute('onclick') === "showReportSub('" + id + "')") t.classList.add('active');
+  });
   renderReportingChecklist(id);
 }
 
@@ -2441,7 +2451,9 @@ function showPowerSub(id) {
   document.querySelectorAll('#panel-power .sub-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('#panel-power .sub-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('power-' + id).classList.add('active');
-  event.target.classList.add('active');
+  document.querySelectorAll('#panel-power .sub-tab').forEach(t => {
+    if (t.getAttribute('onclick') === "showPowerSub('" + id + "')") t.classList.add('active');
+  });
 }
 
 // ==========================================
